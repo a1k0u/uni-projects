@@ -9,23 +9,29 @@
 %start = input('start: ');
 %stop = input('stop: ');
 %step = input('step: ');
-%x = start:step:stop;
-F(1) = {@(x) sin(x)};
-F(2) = {@(x) cos(x)};
-F(3) = {@(x) exp(x)};
+%x = start:step:stop
 
-grid on;
-hold on;
+F(1) = {@(x) x.^2-2}; 
+F(2) = {@(x) exp(x)-5};
+F(3) = {@(x) sin(x)};
+
 format long;
 
 eps = 1e-12;
 
+start = f(12, 1);
 count_func = size(F);
 
+am_dicho = 0;
+am_hord = 0;
 for j=1:count_func(2)
     x = -pi:0.1:pi;
+    
+    subplot(count_func(2), 1, j);
     plot(x, f(x, j));
-
+    hold on;
+    grid on;
+    
     solutions = search_solutions(x, j);
     size_ = size(solutions);
     for i=1:size_(1)
@@ -33,20 +39,27 @@ for j=1:count_func(2)
                                            solutions(i, 2), eps, j);
         [root_hord, iter_hord] = hord(solutions(i, 1), ... 
                                       solutions(i, 2), eps, j);
-        k = @(x, j) f(x, j);
-        fun = @(x) k(x, j);
+        
+        myfunc = @(x, j) f(x, j); % parameterized function
+        fun = @(x) myfunc(x, j); % function of x alone
         fzero_ = fzero(fun,  [solutions(i, 1) solutions(i, 2)]); 
 
-        plot(root_diho, f(root_diho, j), 'x');
-        plot(root_hord, f(root_diho, j), '+');
-        %plot(fzero_, f(fzero_, j), 's');
+        plot(root_dich, f(root_dich, j), 'x');
+        plot(root_hord, f(root_hord, j), '+');
+        plot(fzero_, f(fzero_, j), 's');
+        
+        am_dicho = am_dicho + iter_dich;
+        am_hord = am_hord + iter_hord;
     end
+%     info = legend('Solutions on this gap - %d\n', size_(1));
+%     set(info, 'Location', 'NorthWest');
 end
 
 function [y] = f(x, num)
-    global F
-    func = F{num};
-    y = func(x);
+    F(1) = {@(x) x.^2-2}; 
+    F(2) = {@(x) exp(x)-5};
+    F(3) = {@(x) sin(x)};
+    y = F{num}(x);
 end 
 
 function [c, iterations] = dichotomy(a, b, eps, num)
