@@ -33,14 +33,13 @@ for j=1:count_func(2)
                                            solutions(i, 2), eps, j);
         [root_hord, iter_hord] = hord(solutions(i, 1), ... 
                                       solutions(i, 2), eps, j);
-        
-        myfunc = @(x, j) f(x, j); % parameterized function
-        fun = @(x) myfunc(x, j); % function of x alone
+        k = @(x, j) f(x, j);
+        fun = @(x) k(x, j);
         fzero_ = fzero(fun,  [solutions(i, 1) solutions(i, 2)]); 
 
-        plot(root_dich, f(root_dich, j), 'x');
-        plot(root_hord, f(root_hord, j), '+');
-        plot(fzero_, f(fzero_, j), 's');
+        plot(root_diho, f(root_diho, j), 'x');
+        plot(root_hord, f(root_diho, j), '+');
+        %plot(fzero_, f(fzero_, j), 's');
     end
 end
 
