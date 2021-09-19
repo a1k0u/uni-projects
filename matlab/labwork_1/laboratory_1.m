@@ -1,39 +1,34 @@
-%dihotomia(1, 2, 3);
-%hord(1, 2, 3);
-%search(1, 2, 3);
-
-%f(1, 1);
-% считывание функций, вывод информаций на график, вывод нескольких
-% графиков, тесты, метод ход
-
-%start = input('start: ');
-%stop = input('stop: ');
-%step = input('step: ');
-%x = start:step:stop
-
-F(1) = {@(x) x.^2-2}; 
-F(2) = {@(x) exp(x)-5};
-F(3) = {@(x) sin(x)};
-
 format long;
+clc;
 
 eps = 1e-12;
+titles = {'f(x) = x^2 - 2', 'f(x) = exp(x) - 5', 'f(x) = sin(x)'};
+colors = {'r', 'g', 'b', 'y'};
 
-start = f(12, 1);
-count_func = size(F);
+count_func = size(titles);
 
-am_dicho = 0;
-am_hord = 0;
+
+am_dicho = 0; am_hord = 0;
 for j=1:count_func(2)
     x = -pi:0.1:pi;
     
     subplot(count_func(2), 1, j);
-    plot(x, f(x, j));
+    colors_size = size(colors);
+    const = mod(j, colors_size(2));
+    if const == 0
+        const = const + 1;
+    end
+    color = colors{const};
+    plot(x, f(x, j), color);
     hold on;
     grid on;
     
+    titles_count = size(titles);
+    title(titles{j});
+    
     solutions = search_solutions(x, j);
     size_ = size(solutions);
+    
     for i=1:size_(1)
         [root_dich, iter_dich] = dichotomy(solutions(i, 1), ...
                                            solutions(i, 2), eps, j);
@@ -56,7 +51,7 @@ for j=1:count_func(2)
 end
 
 function [y] = f(x, num)
-    F(1) = {@(x) x.^2-2}; 
+    F(1) = {@(x) x.^2-2};
     F(2) = {@(x) exp(x)-5};
     F(3) = {@(x) sin(x)};
     y = F{num}(x);
