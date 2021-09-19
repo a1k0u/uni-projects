@@ -1,16 +1,16 @@
-format long;
+format short;
 clc;
 
 eps = 1e-12;
+step = 10;
+x = -2*pi:0.1:2*pi;
 titles = {'f(x) = x^2 - 2', 'f(x) = exp(x) - 5', 'f(x) = sin(x)'};
 colors = {'r', 'g', 'b', 'y'};
 
 count_func = size(titles);
 
-
-am_dicho = 0; am_hord = 0;
 for j=1:count_func(2)
-    x = -pi:0.1:pi;
+    am_dicho = 0; am_hord = 0;
     
     subplot(count_func(2), 1, j);
     colors_size = size(colors);
@@ -27,27 +27,45 @@ for j=1:count_func(2)
     title(titles{j});
     
     solutions = search_solutions(x, j);
-    size_ = size(solutions);
+    size_sol = size(solutions);
     
-    for i=1:size_(1)
-        [root_dich, iter_dich] = dichotomy(solutions(i, 1), ...
+    testing = 1;
+    
+    size_x = size(x);
+    
+    for i=1:size_sol(1)
+        [root_dicho, iter_dich] = dichotomy(solutions(i, 1), ...
                                            solutions(i, 2), eps, j);
         [root_hord, iter_hord] = hord(solutions(i, 1), ... 
                                       solutions(i, 2), eps, j);
         
         myfunc = @(x, j) f(x, j); % parameterized function
         fun = @(x) myfunc(x, j); % function of x alone
-        fzero_ = fzero(fun,  [solutions(i, 1) solutions(i, 2)]); 
+        fzero_ = fzero(fun,  [solutions(i, 1) solutions(i, 2)]);
 
-        plot(root_dich, f(root_dich, j), 'x');
+        plot(root_dicho, f(root_dicho, j), 'x');
         plot(root_hord, f(root_hord, j), '+');
         plot(fzero_, f(fzero_, j), 's');
         
         am_dicho = am_dicho + iter_dich;
         am_hord = am_hord + iter_hord;
+        
+        if not(int16(root_hord) == int16(root_hord) && ...
+                                    int16(root_hord) == int16(fzero_))
+            testing = 0;
+        end
     end
-%     info = legend('Solutions on this gap - %d\n', size_(1));
-%     set(info, 'Location', 'NorthWest');
+    fprintf('\nFunction - %s.\n', titles{j});
+    fprintf('Founded solutions - %d from a = %f to b = %f.\n', size_sol(1), x(1), x(size_x(2)));
+    fprintf('It takes %d iterations with hord method.\n', am_hord);
+    fprintf('And %d iterations with dichotomy method.\n', am_dicho);
+    fprintf('Step for tab was %d.\n', step);
+    if testing
+        test = 'True';
+    else
+        test = 'False';
+    end
+    fprintf('Values of dichotomy, hord and root equivalent = %s.\n', test);    
 end
 
 function [y] = f(x, num)
