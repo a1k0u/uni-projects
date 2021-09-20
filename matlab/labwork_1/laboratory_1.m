@@ -2,9 +2,9 @@ format short;
 clc;
 
 eps = 1e-12;
-step = 10;
-x = -2*pi:0.1:2*pi;
-titles = {'f(x) = x^2 - 2', 'f(x) = exp(x) - 5', 'f(x) = sin(x)'};
+step = 0.1;
+x = -pi:0.1:2*pi;
+titles = {'f(x) = 2x^4 - 8x^3 + 8x^2 - 1', 'f(x) = 2arctg(x) - x + 3', 'f(x) = 1 + e^{(-x)}'};
 colors = {'r', 'g', 'b', 'y'};
 
 count_func = size(titles);
@@ -57,9 +57,16 @@ for j=1:count_func(2)
     end
     fprintf('\nFunction - %s.\n', titles{j});
     fprintf('Founded solutions - %d from a = %f to b = %f.\n', size_sol(1), x(1), x(size_x(2)));
+    fprintf('Step for tab was %.2f\n', step);
     fprintf('It takes %d iterations with hord method.\n', am_hord);
     fprintf('And %d iterations with dichotomy method.\n', am_dicho);
-    fprintf('Step for tab was %d.\n', step);
+    
+    if am_dicho > am_hord
+        fprintf('Hord method made less for %d iterations.\n', am_dicho-am_hord);
+    elseif am_dicho < am_hord
+         fprintf('Dichotomy method made less for %d iterations.\n', am_hord-am_dicho);
+    end
+    
     if testing
         test = 'True';
     else
@@ -69,9 +76,9 @@ for j=1:count_func(2)
 end
 
 function [y] = f(x, num)
-    F(1) = {@(x) x.^2-2};
-    F(2) = {@(x) exp(x)-5};
-    F(3) = {@(x) sin(x)};
+    F(1) = {@(x) 2*x.^4-8*x.^3+8*x.^2-1};
+    F(2) = {@(x) 2*atan(x) - x+3};
+    F(3) = {@(x) 1 - exp(1).^(x)};
     y = F{num}(x);
 end 
 
