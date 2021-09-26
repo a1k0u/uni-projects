@@ -2,7 +2,7 @@ format short;
 clc;
 
 main();
-
+    
 function [y] = f(x, num)
     F = {@(x) 2*x.^4-8*x.^3+8*x.^2-1;
          @(x) 2*atan(x) - x+3};
@@ -23,7 +23,7 @@ function [] = main()
     step = 0.1;
     x = -pi:step:2*pi;
     titles = {'f(x) = 2x^4 - 8x^3 + 8x^2 - 1', 'f(x) = 2arctg(x) - x + 3'};
-    colors = {'r', 'g', 'b', 'y'};
+    colors = {'r', 'g', 'b'};
 
     count_func = size(titles);
 
