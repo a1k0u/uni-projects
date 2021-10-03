@@ -17,20 +17,30 @@ function [y] = derivatives_f(x, num, k)
     y = F{num}{k}(x);
 end
 
+function [y] = equivalent_f(x, num)
+    F = {@(x) (x.^3-0.25.*x.^4+0.125).^(1/2);
+         @(x) 2*atan(x) + 3};
+    y = F{num}(x);
+end
+
+function [y] = equivalent_derivatives(x, num)
+    F = {@(x) ((x-3)*x.^2)/((0.5-(x-4).*x.^3).^(1/2));
+         @(x) 2/(x.^2+1)};
+    y = F{num}(x);
+end
+
 function [] = main()
     eps = 1e-12;
     round_num = 3;
-    step = 0.1;
-    x = -pi:step:2*pi;
+    step = 0.001;
+    x = -2*pi:step:2*pi;
     titles = {'f(x) = 2x^4 - 8x^3 + 8x^2 - 1', 'f(x) = 2arctg(x) - x + 3'};
     colors = {'r', 'g', 'b'};
+    method = {@dichotomy; @hord; @newton; @iteration};
 
     count_func = size(titles);
 
     for j=1:count_func(2)
-        am_dicho = 0; am_hord = 0; 
-        am_newt = 0; am_comb = 0;
-
         subplot(count_func(2), 1, j);
 
         colors_size = size(colors);
@@ -44,6 +54,8 @@ function [] = main()
         hold on; grid on;
 
         title(titles{j});
+        xlabel('Ox');
+        ylabel('Oy');
 
         solutions = search_solutions(x, j);
         size_sol = size(solutions);
@@ -51,55 +63,48 @@ function [] = main()
         testing = 1;
 
         size_x = size(x);
+        counter_iterations = {0; 0; 0; 0};
 
         for i=1:size_sol(1)
-            [root_dicho, iter_dicho] = dichotomy(solutions(i, 1), ...
-                                               solutions(i, 2), eps, j);
-            [root_hord, iter_hord] = hord(solutions(i, 1), ... 
-                                          solutions(i, 2), eps, j);
-            [root_newt, iter_newt] = newton(solutions(i, 1), ... 
-                                          solutions(i, 2), eps, j);
-            [root_comb, iter_comb] = combo(solutions(i, 1), ... 
-                                          solutions(i, 2), eps, j);
+            for k=1:4
+                if not(k == 4) || i == 1
+                    [root_method, iter_method] = method{k}(solutions(i, 1), ...
+                                                     solutions(i, 2), eps, j);
+                end
 
-            myfunc = @(x, j) f(x, j); % parameterized function
-            fun = @(x) myfunc(x, j); % function of x alone
-            fzero_ = fzero(fun,  [solutions(i, 1) solutions(i, 2)]);
+                myfunc = @(x, j) f(x, j); % parameterized function
+                fun = @(x) myfunc(x, j); % function of x alone
+                fzero_ = fzero(fun,  [solutions(i, 1) solutions(i, 2)]);
 
-            plot(root_dicho, f(root_dicho, j), 'x');
-            plot(root_hord, f(root_hord, j), '+');
-            plot(root_newt, f(root_newt, j), '*');
-            plot(root_comb, f(root_comb, j), 'o');
-            plot(fzero_, f(fzero_, j), 's');
+                plot(root_method, f(root_method, j), 'x');
+                plot(fzero_, f(fzero_, j), 's');
 
-            am_dicho = am_dicho + iter_dicho;
-            am_hord = am_hord + iter_hord;
-            am_newt = am_newt + iter_newt;
-            am_comb = am_comb + iter_comb;
-
-            if not(round(root_hord, round_num) == round(root_hord, round_num) && ...
-                   round(root_hord, round_num) == round(fzero_, round_num) && ...
-                   round(fzero_, round_num) == round(root_newt, round_num) && ...
-                   round(root_newt, round_num) == round(root_comb, round_num))
-                testing = 0;
-            end
-            if j == 1
-                root_polynomial = roots([2 -8 8 0 -1]);
-                size_root_pol = size(root_polynomial);
-                if not(round(root_newt, round_num) == ...
-                        round(root_polynomial(size_root_pol(1)-i+1), round_num))
+                counter_iterations{k} = counter_iterations{k} + iter_method;
+                if not(round(root_method, round_num) == round(fzero_, round_num))
                     testing = 0;
+                end
+                if j == 1
+                    root_polynomial = roots([2 -8 8 0 -1]);
+                    size_root_pol = size(root_polynomial);
+                    if not(round(root_method, round_num) == ...
+                            round(root_polynomial(size_root_pol(1)-i+1), round_num))
+                        testing = 0;
+                    end
+                end
+                
+                if k == 4 && not(i > 1) && not(testing)
+                    testing = 1;
                 end
             end
         end
         fprintf('\nFunction - %s.\n', titles{j});
         fprintf('Founded solutions - %d from a = %f to b = %f with step - %.2f.\n', ...
                                            size_sol(1), x(1), x(size_x(2)), step);
-        fprintf('Iterations: dichotomy - %d, hord - %d, newton - %d, combo method - %d.\n', ...
-                                           am_dicho, am_hord, am_newt, am_comb);
+        fprintf('Iterations: dichotomy - %d, hord - %d, newton - %d, iteration method - %d.\n', ...
+                                           counter_iterations{1}, counter_iterations{2}, counter_iterations{3}, counter_iterations{4});
         
         if testing, test = 'True'; else, test = 'False'; end 
-        fprintf('Values of dichotomy, hord and root/fzero equivalent = %s.\n', test);    
+        fprintf('Values of dichotomy, hord, newton, iteration and root/fzero equivalent = %s.\n', test);    
     end
 end
 
@@ -121,69 +126,56 @@ function [c, iterations] = dichotomy(a, b, eps, num)
 end
 
 function [c, iterations] = hord(a, b, eps, num)
-    c = a - ((f(a, num))/(f(b, num) - f(a, num)))*(b - a);
     iterations = 0;
-    while abs(f(c, num)) > eps
+    if f(a, num)*f(b, num) < 0
         c = a - ((f(a, num))/(f(b, num) - f(a, num)))*(b - a);
-        if f(a, num)*f(c, num) < 0
-            b = c;
-        else
-            a = c;
+        while abs(f(c, num)) > eps
+            c = a - ((f(a, num))/(f(b, num) - f(a, num)))*(b - a);
+            if f(a, num)*f(c, num) < 0
+                b = c;
+            else
+                a = c;
+            end
+            iterations = iterations + 1;
         end
-        iterations = iterations + 1;
     end
 end
 
-function [c, iterations] = newton(a, b, eps, num)
+function [x, iterations] = newton(a, b, eps, num)
     iterations = 0;
-    if f(a, num)*derivatives_f(a, num, 2) > 0
-        x = a;
-    else
-        x = b;
-    end
-    c = x - (f(x, num)/derivatives_f(x, num, 1));
-    while abs(f(c, num)) > eps
-        c = x - (f(x, num)/derivatives_f(x, num, 1));
-        x = c;
-        iterations = iterations + 1;
+    if f(a, num)*f(b, num) < 0
+        if f(a, num)*derivatives_f(a, num, 2) > 0
+            x = a;
+        else
+            x = b;
+        end
+        while abs(f(x, num)) > eps
+            x = x - (f(x, num)/derivatives_f(x, num, 1));
+            iterations = iterations + 1;
+        end
     end
 end
 
-function [c, iterations] = combo(a, b, eps, num)
+function [c, iterations] = iteration(a, b, eps, num)
     iterations = 0;
-    if f(a, num)*derivatives_f(a, num, 2) > 0
+    if abs(equivalent_derivatives(a, num)) < 1 && abs(equivalent_derivatives(b, num)) < 1
         c = a;
-    elseif f(a, num)*derivatives_f(a, num, 2) < 0
-        c = b;
-    end
-    xn = c - (f(c, num)/derivatives_f(c, num, 1));
-    x = a - ((f(a, num))/(f(b, num) - f(a, num)))*(b - a);
-    
-    while (abs(xn-x) > eps)
-        xn = c - (f(c, num)/derivatives_f(c, num, 1));
-        c = xn;
-        
-        x = a - ((f(a, num))/(f(b, num) - f(a, num)))*(b - a);    
-        if f(a, num)*f(x, num) < 0
-            b = x;
-        else
-            a = x;
+        while abs(f(c, num)) > eps
+            c = equivalent_f(c, num);
+            iterations = iterations + 1;
         end
-        iterations = iterations + 1;
     end
 end
 
 function [Array] = search_solutions(x, num)
     n = size(x);
     prev_y = 0;
-    solutions = 0;
     Array = [];
     for i=1:n(2)
         value = x(1, i);
         y = f(value, num);
         if prev_y*y < 0
             Array = [Array; x(1, i-1) value]; %#ok<*AGROW>
-            solutions = solutions + 1;
         end
         prev_y = y;
     end
