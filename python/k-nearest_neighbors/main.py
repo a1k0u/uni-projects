@@ -1,79 +1,122 @@
 import pygame
-from random import randint
 import pygame.gfxdraw
-from math import sqrt
+import colors
+from random import randint
+from math import sqrt, ceil
 
 pygame.init()
 
 
-def generate_points(width: int, height: int) -> list:
-	points = []
-	color = [(255, 0, 0), (0, 255, 0)]
-	for i in range(0, width // 10):
-		points.append([(randint(int(width * 0.05), width),
-		                randint(int(height * 0.05), height)),
-		               color[randint(0, len(color) - 1)]])
-	return points
+def get_pos():
+    return pygame.mouse.get_pos()
 
 
-def draw_points(points: list, radius: int, screen):
-	for point in points:
-		pygame.gfxdraw.circle(screen, point[0][0], point[0][1], radius, point[1])
+class Application:
+    def __init__(self, width: int, height: int, fps: int):
+        self.width = width
+        self.height = height
+        self.fps = fps
 
+        self.application = True
+        self.points = []
+        self.find_points = []
+        self.clock = pygame.time.Clock()
+        self.lines = 7
+        self.mouse = (0, 0)
+        self.points_types = 6
+        self.radius = ceil(self.width * 0.005)
+        self.colors = colors.POINT_COLORS[: self.points_types]
+        self.screen = pygame.display.set_mode((self.width, self.height))
 
-def find_nearest(points: list, mouse: tuple) -> list:
-	array = []
-	for j in range(len(points)):
-		cd = points[j][0]
-		distance = sqrt((mouse[0] - cd[0])**2 + (mouse[1] - cd[1])**2)
-		array.append((distance, j, points[j][1][0]))
+        self.generate_points()
 
-	array = sorted(array, key=lambda x: x[0])[:5]
-	return array[::]
+        pygame.display.set_caption("")
+        pygame.mouse.set_visible(False)
 
+    def loop(self):
+        while self.application:
+            self.mouse = get_pos()
+            self.find_nearest()
+            self.handlers()
+            self.draw_background()
+            self.draw_points()
+            self.draw_lines()
+            self.draw_cursor()
 
-def draw_line(points: list, nearest_p: list, mouse: tuple, screen):
-	for i in range(len(nearest_p)):
-		xy = points[nearest_p[i][1]][0]
-		pygame.gfxdraw.line(screen, mouse[0], mouse[1], xy[0], xy[1], (255, 255, 255))
-		pygame.gfxdraw.filled_circle(screen, mouse[0], mouse[1], 5, (255, 255, 255))
-		pygame.gfxdraw.filled_circle(screen, xy[0], xy[1], 3, (255, 255, 255))
+            pygame.display.update()
+            self.clock.tick(self.fps)
 
+    def handlers(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.application = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    points_color = {}
+                    for point in self.find_points:
+                        index = point[1]
+                        color = self.points[index][1]
+                        points_color.setdefault(color, 0)
+                        points_color[color] += 1
+                    self.points.append(
+                        [self.mouse, max(points_color, key=points_color.get)]
+                    )
 
-def main(width: int, height: int, fps: int):
-	application = True
-	clock = pygame.time.Clock()
-	screen = pygame.display.set_mode((width, height), pygame.SHOWN)
-	pygame.display.set_caption("")
-	points = generate_points(width, height)
-	pygame.mouse.set_visible(False)
-	red, green = 0, 0
-	while application:
-		mouse = pygame.mouse.get_pos()
-		p = find_nearest(points, mouse)
-		for j in p:
-			if j[2] == 0:
-				green += 1
-			else:
-				red += 1
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				application = False
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button == 1:
-					if red > green:
-						points.append([mouse, (255, 0, 0)])
-					elif green > red:
-						points.append([mouse, (0, 255, 0)])
+    def draw_points(self):
+        for point in self.points:
+            pygame.gfxdraw.circle(
+                self.screen, point[0][0], point[0][1], self.radius, point[1]
+            )
 
-		red, green = 0, 0
-		screen.fill((0, 0, 0))
-		draw_points(points, 10, screen)
-		draw_line(points, p, mouse, screen)
-		pygame.display.update()
-		clock.tick(fps)
+    def draw_lines(self):
+        for point in self.find_points:
+            index = point[1]
+            cd = self.points[index][0]
+            pygame.gfxdraw.line(
+                self.screen,
+                self.mouse[0],
+                self.mouse[1],
+                cd[0],
+                cd[1],
+                colors.WHITE_ALPHA64,
+            )
+            pygame.gfxdraw.filled_circle(
+                self.screen, cd[0], cd[1], ceil(self.radius * 0.2), colors.WHITE_ALPHA128
+            )
+
+    def draw_cursor(self):
+        pygame.gfxdraw.filled_circle(
+            self.screen, self.mouse[0], self.mouse[1], ceil(self.radius * 0.5), colors.WHITE
+        )
+
+    def draw_background(self):
+        self.screen.fill(colors.BLACK)
+
+    def generate_points(self):
+        self.points = [
+            [
+                (
+                    randint(self.radius, self.width - self.radius),
+                    randint(self.radius, self.height - self.radius),
+                ),
+                self.colors[randint(0, len(self.colors) - 1)],
+            ]
+            for i in range(self.width // 10)
+        ]
+
+    def find_nearest(self):
+        self.find_points.clear()
+        for i, point in enumerate(self.points):
+            distance = sqrt(
+                (self.mouse[0] - point[0][0]) ** 2 + (self.mouse[1] - point[0][1]) ** 2
+            )
+            self.find_points.append((distance, i))
+
+        self.find_points.sort(key=lambda x: x[0])
+        self.find_points = self.find_points[: min(self.lines, len(self.find_points))]
 
 
 if __name__ == "__main__":
-	main(1920, 1080, 60)
-	pygame.quit()
+    app = Application(width=1920, height=1080, fps=60)
+    app.loop()
+    pygame.quit()
