@@ -114,6 +114,16 @@ class Application:
             handleOffColour=colors.SLIDER_HANDLER,
         )
 
+        self.text_edit_mode = TextBox(
+            self.screen,
+            x=ceil(self.width * 0.7),
+            y=ceil(self.height * 0.053),
+            width=0,
+            height=0,
+            fontSize=ceil(self.width * 0.015),
+            textColour=colors.TEXT,
+        )
+
         self.button_widget = []
 
     def loop(self):
@@ -121,16 +131,15 @@ class Application:
             self.mouse = get_pos()
             self.set_parameters()
 
-            if self.classify_reset_flag and self.toggle_widget.getValue():
-                self.classify_area()
-                self.classify_reset_flag = False
-
             self.draw_background()
             if self.toggle_widget.getValue():
+                if self.classify_reset_flag:
+                    self.classify_area()
+                    self.classify_reset_flag = False
                 self.draw_classify_area()
             self.draw_points()
             self.draw_menu_bar()
-            self.draw_color_buttons()
+
             self.output_info()
             self.handlers()
 
@@ -159,7 +168,9 @@ class Application:
                         [
                             self.mouse[0],
                             self.mouse[1],
-                            self.colors[self.user_color_index],
+                            self.colors[self.user_color_index]
+                            if self.toggle_widget.getValue()
+                            else self.find_common_color(self.find_nearest(*self.mouse)),
                         ]
                     )
                     self.classify_reset_flag = True
@@ -173,7 +184,10 @@ class Application:
         for point in self.points:
             if self.toggle_widget.getValue():
                 self.draw_gfx_circle(
-                    point[0], point[1], self.radius + 3, colors.OUTLINE
+                    point[0],
+                    point[1],
+                    self.radius + ceil(self.width * 0.0015),
+                    colors.OUTLINE,
                 )
                 color = change_color(list(point[2]), lambda a: a, -92)
                 self.draw_gfx_circle(point[0], point[1], self.radius, color)
@@ -206,6 +220,8 @@ class Application:
 
     def draw_menu_bar(self):
         pygame.gfxdraw.box(self.screen, self.menu_rect, colors.BLACK)
+        if self.toggle_widget.getValue():
+            self.draw_color_buttons()
 
     def draw_classify_area(self):
         for rect in self.classify_points:
@@ -222,14 +238,24 @@ class Application:
 
     def draw_color_buttons(self):
         for i, button in enumerate(self.button_widget):
-            x, y, width, height = button
+            pos_x, pos_y, *width = button
+            radius = width[0] // 2
+            pos_x += radius
+            pos_y += radius
+            self.draw_gfx_circle(pos_x, pos_y, radius, self.colors[i])
             if i == self.user_color_index:
                 self.draw_gfx_circle(
-                    x + width // 2, y + width // 2, width // 2 + 5, colors.WHITE
+                    pos_x,
+                    pos_y,
+                    radius + ceil(self.width * 0.001),
+                    colors.WHITE,
                 )
-            self.draw_gfx_circle(
-                x + width // 2, y + width // 2, width // 2, self.colors[i]
-            )
+                self.draw_gfx_circle(
+                    pos_x,
+                    pos_y,
+                    radius,
+                    change_color(self.colors[i], lambda a: a, -64),
+                )
 
     def generate_points(self):
         self.points = [
@@ -273,14 +299,15 @@ class Application:
                 self.classify_reset_flag = True
                 self.parameters[key] = self.sliders_widget[i].getValue()
                 self.colors = colors.POINT_COLORS[: self.parameters["colors"]]
+                self.user_color_index = min(self.user_color_index, len(self.colors) - 1)
                 self.generate_points()
 
                 self.button_widget = [
                     pygame.Rect(
-                        ceil(self.width * 0.715 + self.width * i * 0.035),
-                        self.height * 0.03,
-                        self.radius * 4,
-                        self.radius * 4,
+                        ceil(self.width * 0.705 + self.width * i * 0.0175),
+                        self.height * 0.05,
+                        self.radius * 2,
+                        self.radius * 2,
                     )
                     for i in range(len(self.colors))
                 ]
@@ -290,6 +317,9 @@ class Application:
             self.text_widget[i].setText(f"Amount of {key}: {self.parameters[key]}")
         self.text_widget[-1].setText(
             "Classify mode" if self.toggle_widget.getValue() else "Spider mode"
+        )
+        self.text_edit_mode.setText(
+            "Choose color:" if self.toggle_widget.getValue() else ""
         )
 
 
