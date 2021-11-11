@@ -10,7 +10,10 @@ height = display_info.current_h
 fps = 600
 
 # objects
-gravity = 0, 1000
+gravity = 0, 3000
+
+walls_elasticity = 0.8
+walls_width = 20
 
 ball_parameters = {
     "amount": 30,

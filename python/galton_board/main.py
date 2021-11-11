@@ -2,7 +2,7 @@ import pygame
 import pymunk.pygame_util
 
 import config as c
-from objects import create_balls
+import objects as obj
 
 
 class Application:
@@ -15,10 +15,11 @@ class Application:
 
         self.space = pymunk.Space()
         self.space.gravity = c.gravity
+        self.options = pymunk.pygame_util.DrawOptions(self.screen)
 
         self.ball_parameters = c.ball_parameters
 
-        self.options = pymunk.pygame_util.DrawOptions(self.screen)
+        obj.create_walls(self.space)
 
     def loop(self):
         while self.application:
@@ -36,7 +37,7 @@ class Application:
             if event.type == pygame.QUIT:
                 self.application = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                create_balls(self.space, event.pos, self.ball_parameters)
+                obj.create_balls(self.space, event.pos, self.ball_parameters)
 
     def update(self):
         pass
