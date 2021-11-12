@@ -17,9 +17,9 @@ def create_slider_widgets(surface: Surface) -> list:
     return [
         Slider(
             surface,
-            x=ceil(c.width * 0.2 * i + c.width * 0.015),
-            y=ceil(c.height * 0.053),
-            width=c.width // 6,
+            x=ceil(c.width * 0.825),
+            y=ceil(c.height * 0.1 * i + c.height * 0.1),
+            width=c.width // 8,
             height=c.handle_radius,
             min=c.sliders_type[key]["min"],
             max=c.sliders_type[key]["max"],

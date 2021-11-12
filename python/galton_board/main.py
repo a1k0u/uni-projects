@@ -30,10 +30,13 @@ class Application:
         self.create_wall_st_pos = (0, 0)
         self.mouse = (0, 0)
 
-        for value in c.walls_coord.values():
-            obj.create_wall(self.space, value[0], value[1], self.objects)
+        for pos_st, pos_end, width in c.walls_coord.values():
+            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
 
         self.sliders = wdg.create_slider_widgets(self.screen)
+        self.menu_bar_rect = pygame.Rect(
+            c.menu_coord_x + 0.75*c.walls_width, c.walls_width, c.width - c.menu_coord_x - 2*c.walls_width, c.height - 2*c.walls_width
+        )
 
     def loop(self):
         while self.application:
@@ -51,16 +54,29 @@ class Application:
             if event.type == pygame.QUIT:
                 self.application = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    obj.create_balls(self.space, event.pos, self.parameters, self.objects)
+                if event.button == 1 and not self.menu_bar_rect.collidepoint(event.pos):
+                    obj.create_balls(
+                        self.space, event.pos, self.parameters, self.objects
+                    )
                 elif event.button == 3:
-                    if not self.create_wall:
+                    if not self.create_wall and not self.menu_bar_rect.collidepoint(event.pos):
                         self.create_wall = True
                         self.create_wall_st_pos = event.pos
 
             if event.type == pygame.MOUSEBUTTONUP:
-                if self.create_wall_st_pos != event.pos and self.create_wall and event.button == 3:
-                    obj.create_wall(self.space, self.create_wall_st_pos, event.pos, self.objects)
+                if (
+                    self.create_wall_st_pos != event.pos
+                    and self.create_wall
+                    and event.button == 3
+                    and not self.menu_bar_rect.collidepoint(event.pos)
+                ):
+                    obj.create_wall(
+                        self.space,
+                        self.create_wall_st_pos,
+                        event.pos,
+                        c.walls_width,
+                        self.objects,
+                    )
                 self.create_wall = False
                 self.create_wall_st_pos = (0, 0)
         pygame_widgets.update(events)
@@ -74,7 +90,7 @@ class Application:
             if o == "wall":
                 shape.elasticity = self.parameters["walls_elasticity"]
             else:
-                shape.elasticity = self.parameters["elasticity"]
+                shape.elasticity = self.parameters["ball_elasticity"]
             shape.friction = self.parameters["friction"]
         self.space.gravity = (0, self.parameters["gravity"])
 
@@ -83,6 +99,7 @@ class Application:
 
         self.space.debug_draw(self.options)
         self.preview_creating_walls()
+        self.draw_menu_bar()
 
     def draw_background(self):
         self.screen.fill(c.background_color)
@@ -96,6 +113,9 @@ class Application:
                 self.mouse,
                 width=c.walls_width,
             )
+
+    def draw_menu_bar(self):
+        pygame.draw.rect(self.screen, c.background_color, self.menu_bar_rect)
 
 
 if __name__ == "__main__":
