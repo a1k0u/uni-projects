@@ -8,6 +8,15 @@ def create_balls(
     pos: tuple,
     parameters: dict,
 ) -> None:
+    """
+    Function is creating some amount of dynamic balls with
+    exact parameters and adding this objects into
+    pymunk space.
+    :param space: pymunk.Space
+    :param pos: tuple
+    :param parameters: dict
+    :return: None
+    """
     for _ in range(parameters["amount"]):
         ball_moment = pymunk.moment_for_circle(
             parameters["mass"], 0, parameters["radius"]
@@ -24,14 +33,16 @@ def create_balls(
         space.add(ball_body, ball_shape)
 
 
-def create_walls(space: pymunk.Space) -> None:
-    walls_coord = {
-        "left": [(0, 0), (0, c.height)],
-        "right": [(c.width, 0), (c.width, c.height)],
-        "bottom": [(0, c.height), (c.width, c.height)],
-    }
-
-    for pos in walls_coord.values():
-        segment_shape = pymunk.Segment(space.static_body, pos[0], pos[1], c.walls_width)
-        segment_shape.elasticity = c.walls_elasticity
-        space.add(segment_shape)
+def create_wall(space: pymunk.Space, pos_start: tuple, pos_end: tuple) -> None:
+    """
+    Function is creating a static segment shape(wall)
+    and adding this object into pymunk space.
+    :param space: pymunk.Space
+    :param pos_start: tuple
+    :param pos_end: tuple
+    :return: None
+    """
+    segment_shape = pymunk.Segment(space.static_body, pos_start, pos_end, c.walls_width)
+    segment_shape.elasticity = c.walls_elasticity
+    segment_shape.color = c.walls_color
+    space.add(segment_shape)
