@@ -11,8 +11,8 @@ from pygame import init, display, FULLSCREEN, SHOWN
 init()
 
 display_info = display.Info()
-width = 800
-height = 600
+width = 1920
+height = 1080
 screen_mode = FULLSCREEN
 
 FPS = 600
@@ -34,16 +34,6 @@ menu_bar_height = height - 2 * walls_width
 
 menu_bar_draw = [menu_bar_x, menu_bar_y, menu_bar_width, menu_bar_height]
 menu_bar_rect = [menu_bar_x, 0, width, height]
-
-parameters = {
-    "ball_amount": 10,
-    "ball_mass": 10,
-    "ball_radius": ceil(width * 0.01),
-    "ball_elasticity": 0.1,
-    "friction": 1.0,
-    "wall_elasticity": 0.8,
-    "gravity": (0, 300),
-}
 
 walls_coord = {
     "left": [(0, 0), (0, height), walls_width],
@@ -138,13 +128,13 @@ sliders_type = {
         "step": 1,
         "initial": 5,
     },
-    "ball_elasticity:": {
+    "ball_elasticity": {
         "min": 0.1,
         "max": 5,
         "step": 0.5,
         "initial": 0.1,
     },
-    "ball_friction:": {
+    "friction": {
         "min": 1.0,
         "max": 10.0,
         "step": 1,
@@ -152,6 +142,8 @@ sliders_type = {
     },
     "wall_elasticity": {"min": 0.8, "max": 13, "step": 0.2, "initial": 0.8},
     "gravity": {"min": -5000, "max": 10000, "step": 300, "initial": 300},
+    "pins_in_a_column": {"min": 3, "max": pins_column, "step": 2, "initial": pins_column},
+    "pins_in_a_row": {"min": 10, "max": pins_row, "step": 2, "initial": pins_row},
 }
 
 text_widget = [
@@ -162,10 +154,16 @@ text_widget = [
     "Value of ball's friction",
     "Value of wall's elasticity",
     "Value of gravity",
+    "Amount of columns",
+    "Amount of pins in a row",
+    "Press LMB to spawn balls",
+    "Hold RMB to create a wall",
+    "Press BACKSPACE to reset",
+    "Press ESC to exit"
 ]
 pos_x_text = ceil(width * 0.81725)
 pos_x_slider = ceil(width * 0.825)
-pos_y_step = height * 0.075
+pos_y_step = height * 0.0725
 
 font_size = ceil(width * 0.015)
 handle_radius = ceil(width * 0.005)
@@ -174,10 +172,16 @@ slider_width = width // 8
 # color
 background_color = (0, 0, 0)
 walls_color = (128, 128, 128, 255)
+menu_color = ()
 
 slider_color = (40, 40, 40)
 slider_handler_color = (200, 200, 200)
 text_color = (128, 128, 128)
 
 funnel_wall_color = (128, 128, 128, 255)
-pins_color = (92, 45, 138, 255)
+pins_color = (85, 85, 85, 255)
+
+# parameters
+parameters = {
+    key: value["initial"] for key, value in sliders_type.items()
+}

@@ -20,11 +20,13 @@ class Application:
         self.clock = pygame.time.Clock()
 
         self.objects = []
+        self.static_objects = []
+
         self.mouse = (0, 0)
         self.parameters = c.parameters
 
         self.space = pymunk.Space()
-        self.space.gravity = self.parameters["gravity"]
+        self.space.gravity = 0, self.parameters["gravity"]
         self.options = pymunk.pygame_util.DrawOptions(self.screen)
 
         self.create_wall = False
@@ -50,43 +52,42 @@ class Application:
     def handlers(self):
         events = pygame.event.get()
         for event in events:
-            if event.type == pygame.QUIT:
-                self.application = False
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    self.application = False
+                if event.key == pygame.K_BACKSPACE:
                     for o in self.space.shapes:
                         self.space.remove(o)
                     self.objects.clear()
                     self.initialization_static_obj()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and not self.rect.collidepoint(event.pos):
-                    obj.create_dynamic_balls(
-                        self.space, event.pos, self.parameters, self.objects
-                    )
-                elif event.button == 3:
-                    if not self.create_wall and not self.rect.collidepoint(event.pos):
-                        self.create_wall = True
-                        self.create_wall_st_pos = event.pos
+            if not self.rect.collidepoint(self.mouse):
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        obj.create_dynamic_balls(
+                            self.space, event.pos, self.parameters, self.objects
+                        )
+                    elif event.button == 3:
+                        if not self.create_wall:
+                            self.create_wall = True
+                            self.create_wall_st_pos = event.pos
 
-            if event.type == pygame.MOUSEBUTTONUP:
-                if (
-                    self.create_wall_st_pos != event.pos
-                    and self.create_wall
-                    and event.button == 3
-                    and not self.rect.collidepoint(event.pos)
-                ):
-                    obj.create_wall(
-                        self.space,
-                        self.create_wall_st_pos,
-                        event.pos,
-                        c.walls_width,
-                        c.walls_color,
-                        self.objects,
-                    )
-                self.create_wall = False
-                self.create_wall_st_pos = (0, 0)
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if (
+                        self.create_wall_st_pos != event.pos
+                        and self.create_wall
+                        and event.button == 3
+                    ):
+                        obj.create_wall(
+                            self.space,
+                            self.create_wall_st_pos,
+                            event.pos,
+                            c.walls_width,
+                            c.walls_color,
+                            self.objects,
+                        )
+                    self.create_wall = False
+                    self.create_wall_st_pos = (0, 0)
         pygame_widgets.update(events)
 
     def update(self):
@@ -106,11 +107,13 @@ class Application:
 
     def update_text(self):
         for i, text in enumerate(c.text_widget):
-            self.texts_widget[i].setText(f"{text}: {self.sliders_widget[i].getValue()}")
+            msg = text
+            if i < len(self.sliders_widget):
+                msg += f": {self.sliders_widget[i].getValue()}"
+            self.texts_widget[i].setText(msg)
 
     def draw(self):
         self.draw_background()
-
         self.space.debug_draw(self.options)
         self.preview_creating_walls()
         self.draw_menu_bar()

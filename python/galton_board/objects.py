@@ -84,6 +84,7 @@ def create_static_balls(
     :return: None
     """
     ball_shape = pymunk.Circle(space.static_body, c.pins_radius, offset=pos)
+    print(c.parameters)
     add_parameters(
         space,
         ball_shape,
