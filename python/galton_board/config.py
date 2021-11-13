@@ -48,24 +48,9 @@ walls_coord = {
 
 # widgets
 sliders_type = {
-    "ball_amount": {
-        "min": 1,
-        "max": 20,
-        "step": 2,
-        "initial": 5
-    },
-    "ball_mass": {
-        "min": 1,
-        "max": 100,
-        "step": 10,
-        "initial": 5
-    },
-    "ball_radius": {
-        "min": 1,
-        "max": 100,
-        "step": 10,
-        "initial": 5
-    },
+    "ball_amount": {"min": 1, "max": 20, "step": 2, "initial": 5},
+    "ball_mass": {"min": 1, "max": 100, "step": 10, "initial": 5},
+    "ball_radius": {"min": 1, "max": 100, "step": 10, "initial": 5},
     "ball_elasticity:": {
         "min": 0.1,
         "max": 5,
@@ -79,8 +64,18 @@ sliders_type = {
         "initial": 1.0,
     },
     "wall_elasticity": {"min": 0.8, "max": 13, "step": 0.2, "initial": 0.8},
-    "gravity": {"min": -2000, "max": 2000, "step": 200, "initial": 500}
+    "gravity": {"min": -2000, "max": 2000, "step": 200, "initial": 500},
 }
+
+text_widget = [
+    "Amount of balls",
+    "Value of ball's mass",
+    "Value of ball's radius",
+    "Value of ball's elasticity",
+    "Value of ball's friction",
+    "Value of wall's elasticity",
+    "Value of gravity"
+]
 
 handle_radius = ceil(width * 0.005)
 

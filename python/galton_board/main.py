@@ -33,7 +33,9 @@ class Application:
         for pos_st, pos_end, width in c.walls_coord.values():
             obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
 
-        self.sliders = wdg.create_slider_widgets(self.screen)
+        self.sliders_widget = wdg.create_slider_widgets(self.screen)
+        self.texts_widget = wdg.create_text_widgets(self.screen)
+
         self.menu_bar_rect = pygame.Rect(
             c.menu_coord_x + 0.75*c.walls_width, c.walls_width, c.width - c.menu_coord_x - 2*c.walls_width, c.height - 2*c.walls_width
         )
@@ -84,7 +86,7 @@ class Application:
     def update(self):
         self.mouse = get_pos()
         for i, key in enumerate(self.parameters):
-            self.parameters[key] = self.sliders[i].getValue()
+            self.parameters[key] = self.sliders_widget[i].getValue()
 
         for o, body, shape in self.objects:
             if o == "wall":
@@ -93,6 +95,12 @@ class Application:
                 shape.elasticity = self.parameters["ball_elasticity"]
             shape.friction = self.parameters["friction"]
         self.space.gravity = (0, self.parameters["gravity"])
+
+        self.update_text()
+
+    def update_text(self):
+        for i, text in enumerate(c.text_widget):
+            self.texts_widget[i].setText(f"{text}: {self.sliders_widget[i].getValue()}")
 
     def draw(self):
         self.draw_background()
