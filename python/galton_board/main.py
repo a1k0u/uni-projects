@@ -20,6 +20,7 @@ class Application:
         self.clock = pygame.time.Clock()
 
         self.objects = []
+        self.mouse = (0, 0)
         self.parameters = c.parameters
 
         self.space = pymunk.Space()
@@ -28,17 +29,13 @@ class Application:
 
         self.create_wall = False
         self.create_wall_st_pos = (0, 0)
-        self.mouse = (0, 0)
 
-        for pos_st, pos_end, width in c.walls_coord.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
+        self.initialization_static_obj()
 
         self.sliders_widget = wdg.create_slider_widgets(self.screen)
         self.texts_widget = wdg.create_text_widgets(self.screen)
-
-        self.menu_bar_rect = pygame.Rect(
-            c.menu_coord_x + 0.75*c.walls_width, c.walls_width, c.width - c.menu_coord_x - 2*c.walls_width, c.height - 2*c.walls_width
-        )
+        self.menu = pygame.Rect(*c.menu_bar_draw)
+        self.rect = pygame.Rect(*c.menu_bar_rect)
 
     def loop(self):
         while self.application:
@@ -55,13 +52,14 @@ class Application:
         for event in events:
             if event.type == pygame.QUIT:
                 self.application = False
+
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and not self.menu_bar_rect.collidepoint(event.pos):
+                if event.button == 1 and not self.rect.collidepoint(event.pos):
                     obj.create_balls(
-                        self.space, event.pos, self.parameters, self.objects
+                        self.space, event.pos, self.parameters, "dynamic", self.objects
                     )
                 elif event.button == 3:
-                    if not self.create_wall and not self.menu_bar_rect.collidepoint(event.pos):
+                    if not self.create_wall and not self.rect.collidepoint(event.pos):
                         self.create_wall = True
                         self.create_wall_st_pos = event.pos
 
@@ -70,13 +68,14 @@ class Application:
                     self.create_wall_st_pos != event.pos
                     and self.create_wall
                     and event.button == 3
-                    and not self.menu_bar_rect.collidepoint(event.pos)
+                    and not self.rect.collidepoint(event.pos)
                 ):
                     obj.create_wall(
                         self.space,
                         self.create_wall_st_pos,
                         event.pos,
                         c.walls_width,
+                        "dynamic",
                         self.objects,
                     )
                 self.create_wall = False
@@ -88,7 +87,7 @@ class Application:
         for i, key in enumerate(self.parameters):
             self.parameters[key] = self.sliders_widget[i].getValue()
 
-        for o, body, shape in self.objects:
+        for type_, o, body, shape in self.objects:
             if o == "wall":
                 shape.elasticity = self.parameters["walls_elasticity"]
             else:
@@ -123,7 +122,15 @@ class Application:
             )
 
     def draw_menu_bar(self):
-        pygame.draw.rect(self.screen, c.background_color, self.menu_bar_rect)
+        pygame.draw.rect(self.screen, c.background_color, self.menu)
+
+    def initialization_static_obj(self):
+        for pos_st, pos_end, width in c.walls_coord.values():
+            obj.create_wall(self.space, pos_st, pos_end, width, "static", self.objects)
+        for pos_st, pos_end, width in c.funnel_coord_left.values():
+            obj.create_wall(self.space, pos_st, pos_end, width, "static", self.objects)
+        for pos_st, pos_end, width in c.funnel_coord_right.values():
+            obj.create_wall(self.space, pos_st, pos_end, width, "static", self.objects)
 
 
 if __name__ == "__main__":

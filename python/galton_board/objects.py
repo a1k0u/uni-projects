@@ -4,7 +4,7 @@ import config as c
 
 
 def create_balls(
-    space: pymunk.Space, pos: tuple, parameters: dict, objects: list
+    space: pymunk.Space, pos: tuple, parameters: dict, type_: str, objects: list
 ) -> None:
     """
     Function is creating some amount of dynamic balls with
@@ -13,6 +13,7 @@ def create_balls(
     :param space: pymunk.Space
     :param pos: tuple
     :param parameters: dict
+    :param type_: str
     :param objects: list
     :return: None
     """
@@ -30,11 +31,16 @@ def create_balls(
         ball_shape.color = [randrange(255) for _ in range(4)]
 
         space.add(ball_body, ball_shape)
-        objects.append(("ball", ball_body, ball_shape))
+        objects.append((type_, "ball", ball_body, ball_shape))
 
 
 def create_wall(
-    space: pymunk.Space, pos_start: tuple, pos_end: tuple, width: int, objects: list
+    space: pymunk.Space,
+    pos_start: tuple,
+    pos_end: tuple,
+    width: int,
+    type_: str,
+    objects: list,
 ) -> None:
     """
     Function is creating a static segment shape(wall)
@@ -43,6 +49,7 @@ def create_wall(
     :param pos_start: tuple
     :param pos_end: tuple
     :param width: int
+    :param type_: str
     :param objects: list
     :return: None
     """
@@ -51,4 +58,4 @@ def create_wall(
     segment_shape.color = c.walls_color
 
     space.add(segment_shape)
-    objects.append(("wall", segment_shape, segment_shape))
+    objects.append((type_, "wall", segment_shape, segment_shape))
