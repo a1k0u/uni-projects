@@ -53,6 +53,13 @@ class Application:
             if event.type == pygame.QUIT:
                 self.application = False
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    for o in self.space.shapes:
+                        self.space.remove(o)
+                    self.objects.clear()
+                    self.initialization_static_obj()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and not self.rect.collidepoint(event.pos):
                     obj.create_dynamic_balls(
