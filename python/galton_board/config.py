@@ -57,54 +57,90 @@ funnel_width = width - menu_bar_width
 funnel_hole_width = ceil(funnel_width * 0.025)
 funnel_hole_height = ceil(funnel_hole_width * 0.25)
 funnel_height = ceil(height * 0.325)
+funnel_wall_width = walls_width // 2
+
+funnel_wall_color = (128, 128, 128, 256)
+
 funnel_coord_left = {
     "top": [
         (0, 0),
-        (funnel_width // 2 - funnel_hole_width,
-         funnel_height // 2 - funnel_hole_height),
-        walls_width // 2,
+        (
+            funnel_width // 2 - funnel_hole_width,
+            funnel_height // 2 - funnel_hole_height,
+        ),
+        funnel_wall_width,
     ],
     "vertical": [
-        (funnel_width // 2 - funnel_hole_width,
-         funnel_height // 2 - funnel_hole_height),
-        (funnel_width // 2 - funnel_hole_width,
-         funnel_height // 2 + funnel_hole_height),
-        walls_width // 2,
+        (
+            funnel_width // 2 - funnel_hole_width,
+            funnel_height // 2 - funnel_hole_height,
+        ),
+        (
+            funnel_width // 2 - funnel_hole_width,
+            funnel_height // 2 + funnel_hole_height,
+        ),
+        funnel_wall_width,
     ],
     "bottom": [
-        (funnel_width // 2 - funnel_hole_width,
-         funnel_height // 2 + funnel_hole_height),
+        (
+            funnel_width // 2 - funnel_hole_width,
+            funnel_height // 2 + funnel_hole_height,
+        ),
         (0, funnel_height),
-        walls_width // 2,
-    ]
+        funnel_wall_width,
+    ],
 }
 funnel_coord_right = {
     "top": [
         (funnel_width, 0),
-        (funnel_width // 2 + funnel_hole_width,
-         funnel_height // 2 - funnel_hole_height),
-        walls_width // 2,
+        (
+            funnel_width // 2 + funnel_hole_width,
+            funnel_height // 2 - funnel_hole_height,
+        ),
+        funnel_wall_width,
     ],
     "vertical": [
-        (funnel_width // 2 + funnel_hole_width,
-         funnel_height // 2 - funnel_hole_height),
-        (funnel_width // 2 + funnel_hole_width,
-         funnel_height // 2 + funnel_hole_height),
-        walls_width // 2,
+        (
+            funnel_width // 2 + funnel_hole_width,
+            funnel_height // 2 - funnel_hole_height,
+        ),
+        (
+            funnel_width // 2 + funnel_hole_width,
+            funnel_height // 2 + funnel_hole_height,
+        ),
+        funnel_wall_width,
     ],
     "bottom": [
-        (funnel_width // 2 + funnel_hole_width,
-         funnel_height // 2 + funnel_hole_height),
+        (
+            funnel_width // 2 + funnel_hole_width,
+            funnel_height // 2 + funnel_hole_height,
+        ),
         (funnel_width, funnel_height),
-        walls_width // 2,
-    ]
+        funnel_wall_width,
+    ],
 }
+
+pins_step = 60
+pins_radius = 5
+
+pins_width = width - menu_bar_width
+pins_height = ceil((height - funnel_height) * 0.5)
+
+pins_row = pins_width // pins_radius // 10
+pins_column = pins_height // pins_radius // 10
+pins_color = (128, 128, 128, 256)
+
 
 # widgets
 sliders_type = {
     "ball_amount": {"min": 1, "max": 20, "step": 2, "initial": 5},
     "ball_mass": {"min": 1, "max": 100, "step": 10, "initial": 5},
-    "ball_radius": {"min": 10, "max": 100, "step": 10, "initial": 5},
+    "ball_radius": {
+        "min": 2,
+        "max": ceil(funnel_hole_width * 0.75),
+        "step": 1,
+        "initial": 5,
+    },
     "ball_elasticity:": {
         "min": 0.1,
         "max": 5,

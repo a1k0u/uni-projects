@@ -55,8 +55,8 @@ class Application:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and not self.rect.collidepoint(event.pos):
-                    obj.create_balls(
-                        self.space, event.pos, self.parameters, "dynamic", self.objects
+                    obj.create_dynamic_balls(
+                        self.space, event.pos, self.parameters, self.objects
                     )
                 elif event.button == 3:
                     if not self.create_wall and not self.rect.collidepoint(event.pos):
@@ -75,7 +75,6 @@ class Application:
                         self.create_wall_st_pos,
                         event.pos,
                         c.walls_width,
-                        "dynamic",
                         self.objects,
                     )
                 self.create_wall = False
@@ -87,7 +86,7 @@ class Application:
         for i, key in enumerate(self.parameters):
             self.parameters[key] = self.sliders_widget[i].getValue()
 
-        for type_, o, body, shape in self.objects:
+        for o, body, shape in self.objects:
             if o == "wall":
                 shape.elasticity = self.parameters["walls_elasticity"]
             else:
@@ -126,11 +125,19 @@ class Application:
 
     def initialization_static_obj(self):
         for pos_st, pos_end, width in c.walls_coord.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, "static", self.objects)
+            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
         for pos_st, pos_end, width in c.funnel_coord_left.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, "static", self.objects)
+            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
         for pos_st, pos_end, width in c.funnel_coord_right.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, "static", self.objects)
+            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
+
+        peg_y, step = c.pins_height, 60
+        for i in range(10):
+            peg_x = - 1.5 * step if i % 2 else -step
+            for _ in range(10):
+                obj.create_static_balls(self.space, (peg_x + c.pins_width // 2.5, peg_y), self.parameters, self.objects)
+                peg_x += step
+            peg_y += 0.5 * step
 
 
 if __name__ == "__main__":
