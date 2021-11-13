@@ -3,13 +3,47 @@ import pymunk.pygame_util
 import config as c
 
 
+def add_parameters(
+    space: pymunk.Space,
+    body,
+    shape,
+    obj_type: str,
+    elasticity: float,
+    friction: float,
+    color: tuple,
+    objects: list,
+) -> None:
+    """
+    Function is adding some parameters: elasticity,
+    friction, color, for pymunk objects and connect
+    these shapes to the pymunk space.
+    :param space: pymunk.Space
+    :param body:
+    :param shape:
+    :param obj_type: str
+    :param elasticity: float
+    :param friction: float
+    :param color: tuple
+    :param objects: list
+    :return: None
+    """
+    shape.elasticity = elasticity
+    shape.friction = friction
+    shape.color = color
+
+    if body is shape:
+        space.add(shape)
+    else:
+        space.add(body, shape)
+    objects.append((obj_type, body, shape))
+
+
 def create_dynamic_balls(
     space: pymunk.Space, pos: tuple, parameters: dict, objects: list
 ) -> None:
     """
-    Function is creating some amount of dynamic balls with
-    exact parameters and adding this objects into
-    pymunk space.
+    Function is creating some amount of dynamic
+    balls with exact parameters.
     :param space: pymunk.Space
     :param pos: tuple
     :param parameters: dict
@@ -22,36 +56,44 @@ def create_dynamic_balls(
         )
 
         ball_body = pymunk.Body(parameters["ball_mass"], ball_moment)
-        ball_body.position = (pos[0] + randrange(20), pos[1] + randrange(10))
+        ball_body.position = (pos[0] + randrange(20), pos[1] + randrange(20))
 
         ball_shape = pymunk.Circle(ball_body, parameters["ball_radius"])
-        ball_shape.elasticity = parameters["ball_elasticity"]
-        ball_shape.friction = parameters["friction"]
-        ball_shape.color = [randrange(255) for _ in range(4)]
-
-        space.add(ball_body, ball_shape)
-        objects.append(("ball", ball_body, ball_shape))
+        add_parameters(
+            space,
+            ball_body,
+            ball_shape,
+            "ball",
+            parameters["ball_elasticity"],
+            parameters["friction"],
+            [randrange(255) for _ in range(4)],
+            objects,
+        )
 
 
 def create_static_balls(
-    space: pymunk.Space, pos: tuple, parameters: dict, objects: list
+    space: pymunk.Space, pos: tuple, color: tuple, objects: list
 ) -> None:
     """
-    Function is creating some amount of dynamic balls with
-    exact parameters and adding this objects into
-    pymunk space.
+    Function is creating a static ball with
+    exact position, radius, color.
     :param space: pymunk.Space
     :param pos: tuple
-    :param parameters: dict
+    :param color: tuple
     :param objects: list
     :return: None
     """
     ball_shape = pymunk.Circle(space.static_body, c.pins_radius, offset=pos)
-    ball_shape.elasticity = parameters["ball_elasticity"]
-    ball_shape.color = [randrange(255) for _ in range(4)]
-
-    space.add(ball_shape)
-    objects.append(("ball", ball_shape, ball_shape))
+    add_parameters(
+        space,
+        ball_shape,
+        ball_shape,
+        "ball",
+        c.parameters["wall_elasticity"],
+        c.parameters["friction"],
+        color,
+        objects,
+    )
 
 
 def create_wall(
@@ -59,21 +101,28 @@ def create_wall(
     pos_start: tuple,
     pos_end: tuple,
     width: int,
+    color: tuple,
     objects: list,
 ) -> None:
     """
-    Function is creating a static segment shape(wall)
-    and adding this object into pymunk space.
+    Function is creating a static
+    segment shape(wall).
     :param space: pymunk.Space
     :param pos_start: tuple
     :param pos_end: tuple
     :param width: int
+    :param color: tuple
     :param objects: list
     :return: None
     """
     segment_shape = pymunk.Segment(space.static_body, pos_start, pos_end, width)
-    segment_shape.elasticity = c.parameters["walls_elasticity"]
-    segment_shape.color = c.walls_color
-
-    space.add(segment_shape)
-    objects.append(("wall", segment_shape, segment_shape))
+    add_parameters(
+        space,
+        segment_shape,
+        segment_shape,
+        "wall",
+        c.parameters["wall_elasticity"],
+        c.parameters["friction"],
+        color,
+        objects,
+    )

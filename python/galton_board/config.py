@@ -5,14 +5,14 @@ is dived by following comment.
 """
 
 from math import ceil
-from pygame import init, display, FULLSCREEN
+from pygame import init, display, FULLSCREEN, SHOWN
 
 # display
 init()
 
 display_info = display.Info()
-width = display_info.current_w
-height = display_info.current_h
+width = 800
+height = 600
 screen_mode = FULLSCREEN
 
 FPS = 600
@@ -41,7 +41,7 @@ parameters = {
     "ball_radius": ceil(width * 0.01),
     "ball_elasticity": 0.1,
     "friction": 1.0,
-    "walls_elasticity": 0.8,
+    "wall_elasticity": 0.8,
     "gravity": (0, 300),
 }
 
@@ -58,8 +58,6 @@ funnel_hole_width = ceil(funnel_width * 0.025)
 funnel_hole_height = ceil(funnel_hole_width * 0.25)
 funnel_height = ceil(height * 0.325)
 funnel_wall_width = walls_width // 2
-
-funnel_wall_color = (128, 128, 128, 256)
 
 funnel_coord_left = {
     "top": [
@@ -120,15 +118,14 @@ funnel_coord_right = {
     ],
 }
 
-pins_step = 60
-pins_radius = 5
+pins_step = ceil(width * 0.03125)
+pins_radius = ceil(width * 0.005)
 
 pins_width = width - menu_bar_width
-pins_height = ceil((height - funnel_height) * 0.5)
+pins_height = ceil((height - funnel_height) * 0.55)
 
-pins_row = pins_width // pins_radius // 10
-pins_column = pins_height // pins_radius // 10
-pins_color = (128, 128, 128, 256)
+pins_row = pins_width // ceil(pins_step * 0.75)
+pins_column = pins_height // ceil(pins_step * 0.45)
 
 
 # widgets
@@ -181,3 +178,6 @@ walls_color = (128, 128, 128, 255)
 slider_color = (40, 40, 40)
 slider_handler_color = (200, 200, 200)
 text_color = (128, 128, 128)
+
+funnel_wall_color = (128, 128, 128, 255)
+pins_color = (92, 45, 138, 255)

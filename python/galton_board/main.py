@@ -75,6 +75,7 @@ class Application:
                         self.create_wall_st_pos,
                         event.pos,
                         c.walls_width,
+                        c.walls_color,
                         self.objects,
                     )
                 self.create_wall = False
@@ -88,7 +89,7 @@ class Application:
 
         for o, body, shape in self.objects:
             if o == "wall":
-                shape.elasticity = self.parameters["walls_elasticity"]
+                shape.elasticity = self.parameters["wall_elasticity"]
             else:
                 shape.elasticity = self.parameters["ball_elasticity"]
             shape.friction = self.parameters["friction"]
@@ -124,20 +125,34 @@ class Application:
         pygame.draw.rect(self.screen, c.background_color, self.menu)
 
     def initialization_static_obj(self):
-        for pos_st, pos_end, width in c.walls_coord.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
-        for pos_st, pos_end, width in c.funnel_coord_left.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
-        for pos_st, pos_end, width in c.funnel_coord_right.values():
-            obj.create_wall(self.space, pos_st, pos_end, width, self.objects)
+        pos_y, step = c.pins_height, c.pins_step
+        for column in range(c.pins_column):
+            pos_x = -1.5 * step if column % 2 else -step
+            for _ in range(c.pins_row):
+                obj.create_static_balls(
+                    self.space, (pos_x, pos_y), c.pins_color, self.objects
+                )
+                if column == c.pins_column - 1:
+                    obj.create_wall(
+                        self.space,
+                        (pos_x, pos_y + step),
+                        (pos_x, c.height),
+                        c.walls_width // 2,
+                        c.funnel_wall_color,
+                        self.objects,
+                    )
+                pos_x += step
+            pos_y += 0.5 * step
 
-        peg_y, step = c.pins_height, 60
-        for i in range(10):
-            peg_x = - 1.5 * step if i % 2 else -step
-            for _ in range(10):
-                obj.create_static_balls(self.space, (peg_x + c.pins_width // 2.5, peg_y), self.parameters, self.objects)
-                peg_x += step
-            peg_y += 0.5 * step
+        for walls in [
+            c.walls_coord.values(),
+            c.funnel_coord_left.values(),
+            c.funnel_coord_right.values(),
+        ]:
+            for pos_st, pos_end, width in walls:
+                obj.create_wall(
+                    self.space, pos_st, pos_end, width, c.walls_color, self.objects
+                )
 
 
 if __name__ == "__main__":
