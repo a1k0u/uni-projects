@@ -14,7 +14,7 @@ SIZE = 50
 
 snake_x, snake_y = random_pos()
 snake = [(snake_x, snake_y)]
-snake_length = len(snake)
+SNAKE_LEN = len(snake)
 
 apple_pos = random_pos()
 
@@ -26,11 +26,11 @@ screen = pygame.display.set_mode((800, 600), pygame.SHOWN)
 clock = pygame.time.Clock()
 
 
-game = True
-while game:
+GAME = True
+while GAME:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            game = False
+            GAME = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
                 dx, dy = 0, -1
@@ -45,10 +45,10 @@ while game:
     snake_y += dy * SIZE
 
     snake.append((snake_x, snake_y))
-    snake = snake[-snake_length:]
+    snake = snake[-SNAKE_LEN:]
 
     if snake[-1] == apple_pos:
-        snake_length += 1
+        SNAKE_LEN += 1
         apple_pos = random_pos()
 
     screen.fill(pygame.Color("black"))
