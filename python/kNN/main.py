@@ -1,13 +1,10 @@
-from random import randint
-from collections import Counter
-
 import pygame
 import pygame.gfxdraw
 import pygame_widgets
 
 import widgets
 import config as c
-from app_math import change_color, calculate_distance, get_pos
+import app_math as m
 
 
 class Application:
@@ -20,8 +17,8 @@ class Application:
 
         self.menu_rect = pygame.Rect(0, 0, c.width, c.menu_height)
 
-        self.user_color_index = 0
         self.mouse = (0, 0)
+        self.user_color_index = 0
 
         self.parameters = c.parameters
         self.colors = c.point_colors[: self.parameters["colors"]]
@@ -30,8 +27,6 @@ class Application:
         self.screen = pygame.display.set_mode((c.width, c.height), pygame.FULLSCREEN)
         pygame.display.set_caption(c.CAPTION)
         pygame.mouse.set_visible(False)
-
-        self.generate_points()
 
         self.sliders_widget = widgets.create_slider_widgets(self.screen)
         self.text_widget = widgets.create_text_widgets(self.screen)
@@ -44,6 +39,7 @@ class Application:
             self.update()
             self.draw()
             self.handlers()
+
             self.draw_cursor()
 
             self.clock.tick(c.FPS)
@@ -66,14 +62,21 @@ class Application:
                             *event.pos,
                             self.colors[self.user_color_index]
                             if self.toggle_widget.getValue()
-                            else self.find_common_color(self.find_nearest(*event.pos)),
+                            else m.find_common_color(
+                                self.points,
+                                m.find_nearest(
+                                    self.points,
+                                    self.parameters["kNN"],
+                                    *event.pos,
+                                ),
+                            ),
                         ]
                     )
                     self.classify_reset_flag = True
         pygame_widgets.update(events)
 
     def update(self):
-        self.mouse = get_pos()
+        self.mouse = m.get_pos()
         self.set_parameters()
 
     def set_parameters(self):
@@ -87,14 +90,18 @@ class Application:
                 self.classify_reset_flag = True
                 self.button_widget = widgets.create_color_buttons(len(self.colors))
 
-                self.generate_points()
+                self.points = m.generate_points(
+                    self.menu_rect.height, self.colors, self.parameters["points"]
+                )
 
     def draw(self):
         self.draw_background()
 
         if self.toggle_widget.getValue():
             if self.classify_reset_flag:
-                self.classify_area()
+                self.classify_blocks = m.classify_area(
+                    self.points, self.parameters["kNN"]
+                )
                 self.classify_reset_flag = False
             self.draw_classify_area()
         elif not self.menu_rect.collidepoint(self.mouse):
@@ -122,7 +129,9 @@ class Application:
             )
 
     def draw_lines(self):
-        nearest_points = self.find_nearest(*self.mouse)
+        nearest_points = m.find_nearest(
+            self.points, self.parameters["kNN"], *self.mouse
+        )
         for index in nearest_points:
             pos = (self.points[index][0], self.points[index][1])
             pygame.gfxdraw.line(
@@ -140,7 +149,7 @@ class Application:
     def draw_points(self):
         for pos_x, pos_y, color in self.points:
             if self.toggle_widget.getValue():
-                changed_color = change_color(color, lambda a: a, c.MAKE_DARKER)
+                changed_color = m.change_color(color, lambda a: a, c.MAKE_DARKER)
 
                 self.draw_gfx_circle(
                     pos_x, pos_y, c.point_outline_radius, c.outline_color
@@ -174,52 +183,12 @@ class Application:
                     pos_x,
                     pos_y,
                     radius,
-                    change_color(self.colors[i], lambda a: a, c.MAKE_DARKER_64),
+                    m.change_color(self.colors[i], lambda a: a, c.MAKE_DARKER_64),
                 )
 
     def draw_cursor(self):
         self.draw_gfx_circle(*self.mouse, c.cursor_outline_radius, c.black)
         self.draw_gfx_circle(*self.mouse, c.cursor_radius, c.white)
-
-    def generate_points(self):
-        self.points = [
-            [
-                randint(c.point_radius, c.width - c.point_radius),
-                randint(self.menu_rect.height, c.height - c.point_radius),
-                self.colors[randint(0, len(self.colors) - 1)],
-            ]
-            for _ in range(self.parameters["points"])
-        ]
-
-    def find_nearest(self, pos_x: int, pos_y: int):
-        find_points = [
-            [calculate_distance(point, (pos_x, pos_y)), i]
-            for i, point in enumerate(self.points)
-        ]
-        find_points.sort(key=lambda a: a[0])
-
-        return [
-            el[1] for el in find_points[: min(self.parameters["kNN"], len(find_points))]
-        ]
-
-    def find_common_color(self, points: list):
-        points_color = Counter([self.points[index][2] for index in points])
-        return points_color.most_common()[0][0]
-
-    def classify_area(self):
-        self.classify_blocks = [
-            [
-                x,
-                y,
-                change_color(
-                    self.find_common_color(self.find_nearest(x, y)),
-                    lambda a: not a,
-                    c.MAKE_LIGHTER,
-                ),
-            ]
-            for y in range(0, c.height, c.block_step)
-            for x in range(0, c.width, c.block_step)
-        ]
 
     def output_info(self):
         for i, key in enumerate(self.parameters):

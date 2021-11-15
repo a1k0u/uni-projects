@@ -19,9 +19,9 @@ def create_slider_widgets(surface: Surface) -> list:
     return [
         Slider(
             surface,
-            x=ceil(c.width * 0.2 * i + c.width * 0.015),
-            y=ceil(c.height * 0.053),
-            width=c.width // 6,
+            x=ceil(c.slider_pos_x_step * i + c.slider_pos_x),
+            y=ceil(c.slider_pos_y),
+            width=c.slider_width,
             height=c.point_radius,
             min=c.sliders_type[key]["min"],
             max=c.sliders_type[key]["max"],
@@ -44,10 +44,10 @@ def create_toggle_widget(surface: Surface) -> Toggle:
     """
     return Toggle(
         surface,
-        x=ceil(c.width * 0.617),
-        y=ceil(c.height * 0.053),
-        width=ceil(c.width * 0.02),
-        height=ceil(c.width * 0.005),
+        x=ceil(c.toggle_pos_x),
+        y=ceil(c.toggle_pos_y),
+        width=ceil(c.toggle_width),
+        height=ceil(c.toggle_height),
         handleRadius=c.point_radius,
         startOn=True,
         onColour=c.text_color,
@@ -67,11 +67,11 @@ def create_text_widgets(surface: Surface) -> list:
     return [
         TextBox(
             surface,
-            x=ceil(c.width * 0.2 * i + c.width * 0.008),
-            y=ceil(c.height * 0.053),
+            x=ceil(c.text_pos_x_step * i + c.text_pos_x),
+            y=ceil(c.text_pos_y),
             width=0,
             height=0,
-            fontSize=ceil(c.width * 0.015),
+            fontSize=ceil(c.text_font_size),
             textColour=c.text_color,
         )
         for i in range(len(c.sliders_type) + 1)
@@ -87,10 +87,10 @@ def create_color_buttons(colors_amount: int) -> list:
     """
     return [
         Rect(
-            ceil(c.width * 0.705 + c.width * i * 0.0175),
-            c.height * 0.05,
-            c.point_radius * 2,
-            c.point_radius * 2,
+            ceil(c.button_color_pos_x + c.button_color_pos_x_step * i),
+            ceil(c.button_color_pos_y),
+            c.button_color_size,
+            c.button_color_size,
         )
         for i in range(colors_amount)
     ]
@@ -105,10 +105,10 @@ def create_text_mode_widget(surface: Surface) -> TextBox:
     """
     return TextBox(
         surface,
-        x=ceil(c.width * 0.7),
-        y=ceil(c.height * 0.053),
+        x=ceil(c.text_mode_pos_x),
+        y=ceil(c.text_mode_pos_y),
         width=0,
         height=0,
-        fontSize=ceil(c.width * 0.015),
+        fontSize=ceil(c.text_font_size),
         textColour=c.text_color,
     )
