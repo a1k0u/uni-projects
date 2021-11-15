@@ -5,23 +5,17 @@ is dived by following comment.
 """
 
 from math import ceil
-from pygame import init, display, FULLSCREEN, SHOWN
+from pygame import init, display, FULLSCREEN
 
 # display
 init()
 
 display_info = display.Info()
-width = 1920
-height = 1080
+width = display_info.current_w
+height = display_info.current_h
 screen_mode = FULLSCREEN
 
 FPS = 600
-
-# instruments
-instruments = {
-    1: "balls",
-    2: "walls",
-}
 
 # objects
 walls_width = height // 200
@@ -142,8 +136,6 @@ sliders_type = {
     },
     "wall_elasticity": {"min": 0.8, "max": 13, "step": 0.2, "initial": 0.8},
     "gravity": {"min": -5000, "max": 10000, "step": 300, "initial": 300},
-    "pins_in_a_column": {"min": 3, "max": pins_column, "step": 2, "initial": pins_column},
-    "pins_in_a_row": {"min": 10, "max": pins_row, "step": 2, "initial": pins_row},
 }
 
 text_widget = [
@@ -154,8 +146,6 @@ text_widget = [
     "Value of ball's friction",
     "Value of wall's elasticity",
     "Value of gravity",
-    "Amount of columns",
-    "Amount of pins in a row",
     "Press LMB to spawn balls",
     "Hold RMB to create a wall",
     "Press BACKSPACE to reset",

@@ -20,8 +20,6 @@ class Application:
         self.clock = pygame.time.Clock()
 
         self.objects = []
-        self.static_objects = []
-
         self.mouse = (0, 0)
         self.parameters = c.parameters
 
@@ -55,6 +53,7 @@ class Application:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.application = False
+
                 if event.key == pygame.K_BACKSPACE:
                     for o in self.space.shapes:
                         self.space.remove(o)
