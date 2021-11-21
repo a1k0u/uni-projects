@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <conio.h>
 
-#define QUEUE_SIZE 100
+#define QUEUE_SIZE 1000
 
 typedef struct cd {
     int x;
@@ -30,22 +30,60 @@ COORD pop(QUEUE* queue) {
     }
 }
 
-void bfs (COORD start, COORD end, int size) {
-    int length = size*size, ar_pointer = 0;
-    int** visited = (int**)calloc(length, sizeof(int*));
-    for (int i = 0; i < length; ++i)
-        visited[i] = (int*)calloc(3, sizeof(int));
+void bfs (char** map, COORD start, COORD end, int size) {
+    int ar_pointer = 0;
+    COORD visited[1000];
+    // int way[1000][3];
 
     QUEUE queue;
     queue.pointer = 0;
     push(&queue, start);
 
     while (queue.pointer != 0) {
+        int add_flag = 0;
+
         COORD cur_xy = pop(&queue);
         if (cur_xy.x == end.x && cur_xy.y == end.y)
             break;
 
-        COORD next_xy[4];
+        COORD next_xy[2];
+        if (cur_xy.x + 1 < size - 1) {
+            next_xy[0].x = cur_xy.x + 1;
+            next_xy[0].y = cur_xy.y;
+        } else {
+            next_xy[0].x = -1;
+        }
+
+        if (cur_xy.y + 1 < size - 1) {
+            next_xy[1].x = cur_xy.x;
+            next_xy[1].y = cur_xy.y + 1;
+        } else  {
+            next_xy[1].x = -1;
+        }
+
+        for (int i = 0; i < 2; ++i) {
+            int flag = 0;
+            if (next_xy[i].x != -1) {
+                for (int j = 0; j < ar_pointer; ++j) {
+                    if (next_xy[i].x == visited[j].x &&
+                                next_xy[i].y == visited[j].y) {
+                        flag = 1;
+                        break;
+                    }
+                }
+                if (!flag) {
+                    push(&queue, next_xy[i]);
+                    if (!add_flag) {
+                        visited[ar_pointer++] = cur_xy;
+                        add_flag = 1;
+                    }
+                }
+            }
+        }
+    }
+    for (int i = ar_pointer-1; i >= 0; --i){
+        COORD xy = visited[i];
+        map[xy.x][xy.y] = '*';
     }
 }
 
@@ -90,7 +128,7 @@ void printInfo() {
 }
 
 int main() {
-    int size = 4;
+    int size = 5;
 
     char** map = initMap(map, size);
     char button;
@@ -106,10 +144,10 @@ int main() {
     tmp_coord.y = start.y;
 
     int choosen = 0;
-    bfs(start, end, size);
 
     do {
         fillMap(map, size);
+        bfs(map, start, end, size);
         map[start.x][start.y] = '@';
         map[end.x][end.y] = '&';
 
