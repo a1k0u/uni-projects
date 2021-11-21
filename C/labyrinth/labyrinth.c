@@ -2,6 +2,53 @@
 #include <stdlib.h>
 #include <conio.h>
 
+#define QUEUE_SIZE 100
+
+typedef struct cd {
+    int x;
+    int y;
+} COORD;
+
+typedef struct qu {
+    COORD memory[QUEUE_SIZE];
+    int pointer;
+} QUEUE;
+
+void push(QUEUE* queue, COORD cd) {
+    if (queue->pointer != QUEUE_SIZE)
+        queue->memory[queue->pointer++] = cd;
+}
+
+COORD pop(QUEUE* queue) {
+    if (queue->pointer != 0) {
+        COORD coordinates = queue->memory[0];
+        for (int i = 0; i < QUEUE_SIZE - 1; ++i)
+            queue->memory[i] = queue->memory[i+1];
+        queue->pointer--;
+
+        return coordinates;
+    }
+}
+
+void bfs (COORD start, COORD end, int size) {
+    int length = size*size, ar_pointer = 0;
+    int** visited = (int**)calloc(length, sizeof(int*));
+    for (int i = 0; i < length; ++i)
+        visited[i] = (int*)calloc(3, sizeof(int));
+
+    QUEUE queue;
+    queue.pointer = 0;
+    push(&queue, start);
+
+    while (queue.pointer != 0) {
+        COORD cur_xy = pop(&queue);
+        if (cur_xy.x == end.x && cur_xy.y == end.y)
+            break;
+
+        COORD next_xy[4];
+    }
+}
+
 char** initMap(char** map, int SIZE) {
     map = (char**)calloc(SIZE, sizeof(char*));
     for (int i = 0; i < SIZE; ++i)
@@ -43,47 +90,54 @@ void printInfo() {
 }
 
 int main() {
-    int size = 10;
+    int size = 4;
 
     char** map = initMap(map, size);
     char button;
 
-    int start_x = 1, start_y = 1;
-    int end_x = size - 2, end_y = size - 2;
+    COORD start, end, tmp_coord;
+    start.x = 1;
+    start.y = 1;
 
-    int x = start_x, y = start_y;
+    end.x = size - 2;
+    end.y = size - 2;
+
+    tmp_coord.x = start.x;
+    tmp_coord.y = start.y;
+
     int choosen = 0;
+    bfs(start, end, size);
 
     do {
         fillMap(map, size);
-        map[start_x][start_y] = '@';
-        map[end_x][end_y] = '&';
+        map[start.x][start.y] = '@';
+        map[end.x][end.y] = '&';
 
         printMap(map, size);
         printInfo();
 
         button = getch();
-        if (button == 'w') y--;
-        if (button == 's') y++;
-        if (button == 'a') x--;
-        if (button == 'd') x++;
+        if (button == 'w') tmp_coord.y--;
+        if (button == 's') tmp_coord.y++;
+        if (button == 'a') tmp_coord.x--;
+        if (button == 'd') tmp_coord.x++;
 
         if (button == '>') {
-            x = end_x;
-            y = end_y;
+            tmp_coord.x = end.x;
+            tmp_coord.y = end.y;
             choosen = 1;
         } else if (button == '<') {
-            x = start_x;
-            y = start_y;
+            tmp_coord.x = start.x;
+            tmp_coord.y = start.y;
             choosen = 0;
         }
 
         if (!choosen) {
-            start_x = x;
-            start_y = y;
+            start.x = tmp_coord.x;
+            start.y = tmp_coord.y;
         } else if (choosen) {
-            end_x = x;
-            end_y = y;
+            end.x = tmp_coord.x;
+            end.y = tmp_coord.y;
         }
 
         system("cls");
