@@ -9,6 +9,14 @@ char** initMap(char** map, int SIZE) {
     return map;
 }
 
+
+char** deleteMap(char** map, int size) {
+    for (int i = 0; i < size; ++i)
+        free(map[i]);
+    free(map);
+    return NULL;
+}
+
 void fillMap(char** map, int size) {
     for (int y = 0; y < size; ++y)
         for (int x = 0; x < size; ++x)
@@ -17,7 +25,6 @@ void fillMap(char** map, int size) {
                 map[x][y] = '#';
             else
                 map[x][y] = ' ';
-
 }
 
 void printMap(char** map, int size) {
@@ -79,9 +86,9 @@ int main() {
             end_y = y;
         }
 
-
-
         system("cls");
     } while (button != 'e');
+
+    map = deleteMap(map, size);
     return 0;
 }
