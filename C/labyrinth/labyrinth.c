@@ -30,10 +30,13 @@ COORD pop(QUEUE* queue) {
     }
 }
 
+void print_cd(COORD cd) {
+    printf("\n x=%d, y=%d\n", cd.x, cd.y);
+}
+
 void bfs (char** map, COORD start, COORD end, int size) {
     int ar_pointer = 0;
-    COORD visited[1000];
-    // int way[1000][3];
+    COORD visited[5000];
 
     QUEUE queue;
     queue.pointer = 0;
@@ -62,11 +65,10 @@ void bfs (char** map, COORD start, COORD end, int size) {
         }
 
         for (int i = 0; i < 2; ++i) {
-            int flag = 0;
             if (next_xy[i].x != -1) {
+                int flag = 0;
                 for (int j = 0; j < ar_pointer; ++j) {
-                    if (next_xy[i].x == visited[j].x &&
-                                next_xy[i].y == visited[j].y) {
+                    if (next_xy[i].x == visited[j].x && next_xy[i].y == visited[j].y) {
                         flag = 1;
                         break;
                     }
@@ -74,8 +76,15 @@ void bfs (char** map, COORD start, COORD end, int size) {
                 if (!flag) {
                     push(&queue, next_xy[i]);
                     if (!add_flag) {
-                        visited[ar_pointer++] = cur_xy;
-                        add_flag = 1;
+                        int flag_ = 0;
+                        for (int k = 0; i < ar_pointer; ++i)
+                            for (int m = k + 1; m < ar_pointer; ++m)
+                                if (visited[k].x == visited[m].x && visited[k].y == visited[m].y)
+                                    flag_ = 1;
+                        if (!flag_) {
+                            visited[ar_pointer++] = cur_xy;
+                            add_flag = 1;
+                        }
                     }
                 }
             }
@@ -84,7 +93,10 @@ void bfs (char** map, COORD start, COORD end, int size) {
     for (int i = ar_pointer-1; i >= 0; --i){
         COORD xy = visited[i];
         map[xy.x][xy.y] = '*';
+        printf("%d. x=%d, y=%d\n", i, xy.x, xy.y);
     }
+    printf("end. x=%d, y=%d\n", end.x, end.y);
+    printf("start. x=%d, y=%d\n", start.x, start.y);
 }
 
 char** initMap(char** map, int SIZE) {
@@ -128,7 +140,7 @@ void printInfo() {
 }
 
 int main() {
-    int size = 5;
+    int size = 10;
 
     char** map = initMap(map, size);
     char button;
