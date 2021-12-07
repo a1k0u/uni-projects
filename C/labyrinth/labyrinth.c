@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <conio.h>
 
 #define QUEUE_SIZE 1000
 
 typedef struct cd {
+    int num;
     int x;
     int y;
 } COORD;
@@ -30,73 +32,105 @@ COORD pop(QUEUE* queue) {
     }
 }
 
-void print_cd(COORD cd) {
-    printf("\n x=%d, y=%d\n", cd.x, cd.y);
-}
-
 void bfs (char** map, COORD start, COORD end, int size) {
-    int ar_pointer = 0;
-    COORD visited[5000];
+    COORD visited_points[5000];
+    int visited_points_pointer = 0;
 
-    QUEUE queue;
-    queue.pointer = 0;
-    push(&queue, start);
+    QUEUE next_points;
+    next_points.pointer = 0;
+    start.num = 0;
 
-    while (queue.pointer != 0) {
-        int add_flag = 0;
+    push(&next_points, start);
+    while(next_points.pointer != 0) {
+        COORD cur_coord = pop(&next_points);
 
-        COORD cur_xy = pop(&queue);
-        if (cur_xy.x == end.x && cur_xy.y == end.y)
+        if (cur_coord.x == end.x && cur_coord.y == end.y) {
+            visited_points[visited_points_pointer++] = cur_coord;
             break;
+        }
 
-        COORD next_xy[2];
-        if (cur_xy.x + 1 < size - 1) {
-            next_xy[0].x = cur_xy.x + 1;
-            next_xy[0].y = cur_xy.y;
+        COORD steped_point[4];
+        if (cur_coord.x + 1 < size - 1 && map[cur_coord.x + 1][cur_coord.y] != '#') {
+            steped_point[0].x = cur_coord.x + 1;
+            steped_point[0].y = cur_coord.y;
+            steped_point[0].num = cur_coord.num + 1;
         } else {
-            next_xy[0].x = -1;
+            steped_point[0].x = -1;
+        }
+        if (cur_coord.y + 1 < size - 1 && map[cur_coord.x][cur_coord.y + 1] != '#') {
+            steped_point[1].x = cur_coord.x;
+            steped_point[1].y = cur_coord.y + 1;
+            steped_point[1].num = cur_coord.num + 1;
+        } else {
+            steped_point[1].x = -1;
+        }
+        if (cur_coord.x - 1 > 1 && map[cur_coord.x - 1][cur_coord.y] != '#') {
+            steped_point[2].x = cur_coord.x - 1;
+            steped_point[2].y = cur_coord.y;
+            steped_point[2].num = cur_coord.num + 1;
+        } else {
+            steped_point[2].x = -1;
+        }
+        if (cur_coord.y - 1 > 1 && map[cur_coord.x][cur_coord.y - 1] != '#') {
+            steped_point[3].x = cur_coord.x;
+            steped_point[3].y = cur_coord.y - 1;
+            steped_point[3].num = cur_coord.num + 1;
+        } else {
+            steped_point[3].x = -1;
         }
 
-        if (cur_xy.y + 1 < size - 1) {
-            next_xy[1].x = cur_xy.x;
-            next_xy[1].y = cur_xy.y + 1;
-        } else  {
-            next_xy[1].x = -1;
-        }
-
-        for (int i = 0; i < 2; ++i) {
-            if (next_xy[i].x != -1) {
-                int flag = 0;
-                for (int j = 0; j < ar_pointer; ++j) {
-                    if (next_xy[i].x == visited[j].x && next_xy[i].y == visited[j].y) {
-                        flag = 1;
+        for (int i = 0; i < 4; i++) {
+            int fg = 0;
+            if (!(steped_point[i].x == -1)) {
+                for (int j = 0; j < next_points.pointer; j++) {
+                    if (next_points.memory[j].x == steped_point[i].x && next_points.memory[j].y == steped_point[i].y) {
+                        fg = 1;
                         break;
                     }
                 }
-                if (!flag) {
-                    push(&queue, next_xy[i]);
-                    if (!add_flag) {
-                        int flag_ = 0;
-                        for (int k = 0; i < ar_pointer; ++i)
-                            for (int m = k + 1; m < ar_pointer; ++m)
-                                if (visited[k].x == visited[m].x && visited[k].y == visited[m].y)
-                                    flag_ = 1;
-                        if (!flag_) {
-                            visited[ar_pointer++] = cur_xy;
-                            add_flag = 1;
-                        }
-                    }
+                if (!fg) {
+                    push(&next_points, steped_point[i]);
                 }
             }
         }
+
+        int flag = 0;
+        for (int i = 0; i < visited_points_pointer; i++) {
+            if (visited_points[i].x == cur_coord.x && visited_points[i].y == cur_coord.y) {
+                flag = 1;
+                break;
+            }
+        }
+
+        if (!flag) {
+            visited_points[visited_points_pointer] = cur_coord;
+            visited_points_pointer++;
+        }
     }
-    for (int i = ar_pointer-1; i >= 0; --i){
-        COORD xy = visited[i];
-        map[xy.x][xy.y] = '*';
-        printf("%d. x=%d, y=%d\n", i, xy.x, xy.y);
+
+    int index_end = 0;
+    COORD xy_draw;
+    for (int i = 0; i < visited_points_pointer; i++) {
+        if (visited_points[i].x == end.x && visited_points[i].y == end.y) {
+            index_end = visited_points[i].num;
+            xy_draw.x = visited_points[i].x;
+            xy_draw.y = visited_points[i].y;
+            break;
+        }
     }
-    printf("end. x=%d, y=%d\n", end.x, end.y);
-    printf("start. x=%d, y=%d\n", start.x, start.y);
+
+    while (index_end >= 0) {
+        for (int i = 0; i < visited_points_pointer; i++) {
+            if (((abs(visited_points[i].x - xy_draw.x) == 1 && abs(visited_points[i].y - xy_draw.y) == 0)
+                    || (abs(visited_points[i].x - xy_draw.x) == 0 && abs(visited_points[i].y - xy_draw.y) == 1))
+                    && visited_points[i].num == index_end-1) {
+                xy_draw.x = visited_points[i].x;
+                xy_draw.y = visited_points[i].y;
+                map[xy_draw.x][xy_draw.y] = '*';
+            }
+        }
+        index_end--;
+    }
 }
 
 char** initMap(char** map, int SIZE) {
