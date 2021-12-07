@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <conio.h>
 
@@ -126,7 +127,7 @@ void bfs (char** map, COORD start, COORD end, int size) {
                     && visited_points[i].num == index_end-1) {
                 xy_draw.x = visited_points[i].x;
                 xy_draw.y = visited_points[i].y;
-                map[xy_draw.x][xy_draw.y] = '*';
+                map[xy_draw.x][xy_draw.y] = '.';
             }
         }
         index_end--;
@@ -149,17 +150,28 @@ char** deleteMap(char** map, int size) {
 }
 
 void fillMap(char** map, int size) {
-    for (int y = 0; y < size; ++y)
-        for (int x = 0; x < size; ++x)
-            if ((y == 0) || (x == 0) ||
-                    (y == size-1) || (x == size-1))
-                map[x][y] = '#';
-            else
-                map[x][y] = ' ';
+    FILE* f_read = fopen("input.txt", "r");
+
+    int map_height = 1, map_width;
+
+    if (!f_read) {
+        puts("Warning!");
+        return -1;
+    }
+
+    char buffer[100] = {0};
+    while (fgets(buffer, 100, f_read)) {
+        map_width = strlen(buffer);
+        for (int i = 0; i <= map_width; ++i)
+            map[map_height-1][i] = buffer[i];
+        map_height++;
+    }
+
+    fclose(f_read);
 }
 
 void printMap(char** map, int size) {
-    for (int y = 0; y < size; ++y) {
+    for (int y = 0; y < size-1; ++y) {
         for (int x = 0; x < size; ++x)
             printf("%2c", map[x][y]);
         printf("\n");
@@ -167,14 +179,14 @@ void printMap(char** map, int size) {
 }
 
 void printInfo() {
-    printf("\nUse SHIFT + < - to correct START position(@).\n");
-    printf("Use SHIFT + > - to correct END position(&).\n");
+    printf("\nUse SHIFT + < - to correct START position(S).\n");
+    printf("Use SHIFT + > - to correct END position(F).\n");
     printf("\nUse WASD to move.");
     printf("\n\n");
 }
 
 int main() {
-    int size = 10;
+    int size = 23;
 
     char** map = initMap(map, size);
     char button;
@@ -183,8 +195,8 @@ int main() {
     start.x = 1;
     start.y = 1;
 
-    end.x = size - 2;
-    end.y = size - 2;
+    end.x = size - 3;
+    end.y = size - 3;
 
     tmp_coord.x = start.x;
     tmp_coord.y = start.y;
@@ -194,17 +206,17 @@ int main() {
     do {
         fillMap(map, size);
         bfs(map, start, end, size);
-        map[start.x][start.y] = '@';
-        map[end.x][end.y] = '&';
+        map[start.x][start.y] = 'S';
+        map[end.x][end.y] = 'F';
 
         printMap(map, size);
         printInfo();
 
         button = getch();
-        if (button == 'w') tmp_coord.y--;
-        if (button == 's') tmp_coord.y++;
-        if (button == 'a') tmp_coord.x--;
-        if (button == 'd') tmp_coord.x++;
+        if (button == 'w' && tmp_coord.y > 1) tmp_coord.y--;
+        if (button == 's' && tmp_coord.y < size-1) tmp_coord.y++;
+        if (button == 'a' && tmp_coord.x > 1) tmp_coord.x--;
+        if (button == 'd' && tmp_coord.y < size-1) tmp_coord.x++;
 
         if (button == '>') {
             tmp_coord.x = end.x;
