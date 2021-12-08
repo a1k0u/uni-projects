@@ -33,86 +33,60 @@ COORD pop(QUEUE* queue) {
     }
 }
 
-void bfs (char** map, COORD start, COORD end, int size) {
+void bfs (char** map, COORD st_point, COORD end_point, int size) {
     COORD visited_points[5000];
+    COORD steped_point;
+    QUEUE queue_points;
+    queue_points.pointer = 0;
+
     int visited_points_pointer = 0;
+    int flag = 0;
 
-    QUEUE next_points;
-    next_points.pointer = 0;
-    start.num = 0;
+    st_point.num = 0;
 
-    push(&next_points, start);
-    while(next_points.pointer != 0) {
-        COORD cur_coord = pop(&next_points);
+    push(&queue_points, st_point);
+    while(queue_points.pointer != 0) {
+        COORD cur_coord = pop(&queue_points);
 
-        if (cur_coord.x == end.x && cur_coord.y == end.y) {
-            visited_points[visited_points_pointer++] = cur_coord;
-            break;
-        }
-
-        COORD steped_point[4];
-        if (cur_coord.x + 1 < size - 1 && map[cur_coord.x + 1][cur_coord.y] != '#') {
-            steped_point[0].x = cur_coord.x + 1;
-            steped_point[0].y = cur_coord.y;
-            steped_point[0].num = cur_coord.num + 1;
-        } else {
-            steped_point[0].x = -1;
-        }
-        if (cur_coord.y + 1 < size - 1 && map[cur_coord.x][cur_coord.y + 1] != '#') {
-            steped_point[1].x = cur_coord.x;
-            steped_point[1].y = cur_coord.y + 1;
-            steped_point[1].num = cur_coord.num + 1;
-        } else {
-            steped_point[1].x = -1;
-        }
-        if (cur_coord.x - 1 > 1 && map[cur_coord.x - 1][cur_coord.y] != '#') {
-            steped_point[2].x = cur_coord.x - 1;
-            steped_point[2].y = cur_coord.y;
-            steped_point[2].num = cur_coord.num + 1;
-        } else {
-            steped_point[2].x = -1;
-        }
-        if (cur_coord.y - 1 > 1 && map[cur_coord.x][cur_coord.y - 1] != '#') {
-            steped_point[3].x = cur_coord.x;
-            steped_point[3].y = cur_coord.y - 1;
-            steped_point[3].num = cur_coord.num + 1;
-        } else {
-            steped_point[3].x = -1;
-        }
-
-        for (int i = 0; i < 4; i++) {
-            int fg = 0;
-            if (!(steped_point[i].x == -1)) {
-                for (int j = 0; j < next_points.pointer; j++) {
-                    if (next_points.memory[j].x == steped_point[i].x && next_points.memory[j].y == steped_point[i].y) {
-                        fg = 1;
-                        break;
-                    }
-                }
-                if (!fg) {
-                    push(&next_points, steped_point[i]);
-                }
-            }
-        }
-
-        int flag = 0;
-        for (int i = 0; i < visited_points_pointer; i++) {
-            if (visited_points[i].x == cur_coord.x && visited_points[i].y == cur_coord.y) {
+        flag = 0;
+        for (int i = 0; i < visited_points_pointer; i++)
+            if (visited_points[i].x == cur_coord.x &&
+                        visited_points[i].y == cur_coord.y) {
                 flag = 1;
                 break;
             }
-        }
 
-        if (!flag) {
-            visited_points[visited_points_pointer] = cur_coord;
-            visited_points_pointer++;
+        if (!flag)
+            visited_points[visited_points_pointer++] = cur_coord;
+
+        if (cur_coord.x == end_point.x && cur_coord.y == end_point.y)
+            break;
+
+        int directions[4][2] = {1, 0, -1, 0, 0, 1, 0, -1};
+        for (int i = 0; i < 4; i++) {
+            flag = 0;
+
+            steped_point.x = cur_coord.x + directions[i][0];
+            steped_point.y = cur_coord.y + directions[i][1];
+            steped_point.num = cur_coord.num + 1;
+            if (map[steped_point.y][steped_point.x] != '#') {
+                for (int j = 0; j < queue_points.pointer; j++) {
+                    if (queue_points.memory[j].x == steped_point.x &&
+                                queue_points.memory[j].y == steped_point.y) {
+                        flag = 1;
+                        break;
+                    }
+                }
+                if (!flag)
+                    push(&queue_points, steped_point);
+            }
         }
     }
 
     int index_end = 0;
     COORD xy_draw;
     for (int i = 0; i < visited_points_pointer; i++) {
-        if (visited_points[i].x == end.x && visited_points[i].y == end.y) {
+        if (visited_points[i].x == end_point.x && visited_points[i].y == end_point.y) {
             index_end = visited_points[i].num;
             xy_draw.x = visited_points[i].x;
             xy_draw.y = visited_points[i].y;
@@ -127,7 +101,7 @@ void bfs (char** map, COORD start, COORD end, int size) {
                     && visited_points[i].num == index_end-1) {
                 xy_draw.x = visited_points[i].x;
                 xy_draw.y = visited_points[i].y;
-                map[xy_draw.x][xy_draw.y] = '.';
+                map[xy_draw.y][xy_draw.x] = '.';
             }
         }
         index_end--;
@@ -152,18 +126,13 @@ char** deleteMap(char** map, int size) {
 void fillMap(char** map, int size) {
     FILE* f_read = fopen("input.txt", "r");
 
-    int map_height = 1, map_width;
-
-    if (!f_read) {
-        puts("Warning!");
-        return -1;
-    }
+    int map_height = 0, map_width;
 
     char buffer[100] = {0};
     while (fgets(buffer, 100, f_read)) {
         map_width = strlen(buffer);
-        for (int i = 0; i <= map_width; ++i)
-            map[map_height-1][i] = buffer[i];
+        for (int i = 0; i < map_width; ++i)
+            map[map_height][i] = buffer[i];
         map_height++;
     }
 
@@ -171,11 +140,9 @@ void fillMap(char** map, int size) {
 }
 
 void printMap(char** map, int size) {
-    for (int y = 0; y < size-1; ++y) {
+    for (int y = 0; y < size; ++y)
         for (int x = 0; x < size; ++x)
-            printf("%2c", map[x][y]);
-        printf("\n");
-    }
+            printf("%2c", map[y][x]);
 }
 
 void printInfo() {
@@ -191,49 +158,49 @@ int main() {
     char** map = initMap(map, size);
     char button;
 
-    COORD start, end, tmp_coord;
-    start.x = 1;
-    start.y = 1;
+    COORD st_point, end_point, tmp_coord;
+    st_point.x = 1;
+    st_point.y = 1;
 
-    end.x = size - 3;
-    end.y = size - 3;
+    end_point.x = 2;
+    end_point.y = 2;
 
-    tmp_coord.x = start.x;
-    tmp_coord.y = start.y;
+    tmp_coord.x = st_point.x;
+    tmp_coord.y = st_point.y;
 
     int choosen = 0;
 
     do {
         fillMap(map, size);
-        bfs(map, start, end, size);
-        map[start.x][start.y] = 'S';
-        map[end.x][end.y] = 'F';
+        bfs(map, st_point, end_point, size);
+        map[st_point.y][st_point.x] = 'S';
+        map[end_point.y][end_point.x] = 'F';
 
         printMap(map, size);
         printInfo();
 
         button = getch();
-        if (button == 'w' && tmp_coord.y > 1) tmp_coord.y--;
-        if (button == 's' && tmp_coord.y < size-1) tmp_coord.y++;
-        if (button == 'a' && tmp_coord.x > 1) tmp_coord.x--;
-        if (button == 'd' && tmp_coord.y < size-1) tmp_coord.x++;
+        if (button == 'w') tmp_coord.y--;
+        if (button == 's') tmp_coord.y++;
+        if (button == 'a') tmp_coord.x--;
+        if (button == 'd') tmp_coord.x++;
 
         if (button == '>') {
-            tmp_coord.x = end.x;
-            tmp_coord.y = end.y;
+            tmp_coord.x = end_point.x;
+            tmp_coord.y = end_point.y;
             choosen = 1;
         } else if (button == '<') {
-            tmp_coord.x = start.x;
-            tmp_coord.y = start.y;
+            tmp_coord.x = st_point.x;
+            tmp_coord.y = st_point.y;
             choosen = 0;
         }
 
         if (!choosen) {
-            start.x = tmp_coord.x;
-            start.y = tmp_coord.y;
+            st_point.x = tmp_coord.x;
+            st_point.y = tmp_coord.y;
         } else if (choosen) {
-            end.x = tmp_coord.x;
-            end.y = tmp_coord.y;
+            end_point.x = tmp_coord.x;
+            end_point.y = tmp_coord.y;
         }
 
         system("cls");
