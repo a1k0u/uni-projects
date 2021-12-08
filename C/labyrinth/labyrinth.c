@@ -40,7 +40,7 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
     queue_points.pointer = 0;
 
     int visited_points_pointer = 0;
-    int flag = 0;
+    int flag = 0, index_end_point;
 
     st_point.num = 0;
 
@@ -59,11 +59,13 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
         if (!flag)
             visited_points[visited_points_pointer++] = cur_coord;
 
-        if (cur_coord.x == end_point.x && cur_coord.y == end_point.y)
+        if (cur_coord.x == end_point.x && cur_coord.y == end_point.y) {
+            index_end_point = cur_coord.num;
             break;
+        }
 
-        int directions[8][2] = {1, 0, -1, 0, 0, 1, 0, -1, 1, 1, -1, -1, 1, -1, -1, 1};
-        for (int i = 0; i < 8; i++) {
+        int directions[4][2] = {1, 0, -1, 0, 0, 1, 0, -1};
+        for (int i = 0; i < 4; i++) {
             flag = 0;
 
             steped_point.x = cur_coord.x + directions[i][0];
@@ -83,30 +85,22 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
         }
     }
 
-    int index_end = 0;
-    COORD xy_draw;
-    for (int i = 0; i < visited_points_pointer; i++) {
-        if (visited_points[i].x == end_point.x && visited_points[i].y == end_point.y) {
-            index_end = visited_points[i].num;
-            xy_draw.x = visited_points[i].x;
-            xy_draw.y = visited_points[i].y;
-            break;
-        }
-    }
-
-    while (index_end >= 0) {
+    COORD coord_draw;
+    coord_draw.x = end_point.x;
+    coord_draw.y = end_point.y;
+    while (index_end_point >= 0) {
         for (int i = 0; i < visited_points_pointer; i++) {
-            if (((abs(visited_points[i].x - xy_draw.x) == 1 && abs(visited_points[i].y - xy_draw.y) == 0)
-                    || (abs(visited_points[i].x - xy_draw.x) == 0 && abs(visited_points[i].y - xy_draw.y) == 1)
-                    || (abs(visited_points[i].x - xy_draw.x) == 1 && abs(visited_points[i].y - xy_draw.y) == 1))
-                    && visited_points[i].num == index_end-1) {
-                xy_draw.x = visited_points[i].x;
-                xy_draw.y = visited_points[i].y;
-                map[xy_draw.y][xy_draw.x] = '`';
+            if (((abs(visited_points[i].x - coord_draw.x) == 1 && abs(visited_points[i].y - coord_draw.y) == 0)
+                    || (abs(visited_points[i].x - coord_draw.x) == 0 && abs(visited_points[i].y - coord_draw.y) == 1)
+                    || (abs(visited_points[i].x - coord_draw.x) == 1 && abs(visited_points[i].y - coord_draw.y) == 1))
+                    && visited_points[i].num == index_end_point-1) {
+                coord_draw.x = visited_points[i].x;
+                coord_draw.y = visited_points[i].y;
+                map[coord_draw.y][coord_draw.x] = '`';
                 break;
             }
         }
-        index_end--;
+        index_end_point--;
     }
 }
 
@@ -116,7 +110,6 @@ char** initMap(char** map, int SIZE) {
         map[i] = (char*)calloc(SIZE, sizeof(char));
     return map;
 }
-
 
 char** deleteMap(char** map, int size) {
     for (int i = 0; i < size; ++i)
@@ -128,23 +121,34 @@ char** deleteMap(char** map, int size) {
 void fillMap(char** map, int size) {
     FILE* f_read = fopen("input.txt", "r");
 
-    int map_height = 0, map_width;
-
+    int map_height = 1;
     char buffer[100] = {0};
     while (fgets(buffer, 100, f_read)) {
-        map_width = strlen(buffer);
-        for (int i = 0; i < map_width; ++i)
-            map[map_height][i] = buffer[i];
+        for (int i = 1; i < size-1; ++i) {
+            if (buffer[i] == '1')
+                map[map_height][i] = '#';
+            else
+                map[map_height][i] = ' ';
+        }
         map_height++;
     }
 
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j) {
+            if (j == 0 || j == size-1
+                    || i == 0
+                    || i == size-1)
+                map[i][j] = '#';
+        }
     fclose(f_read);
 }
 
 void printMap(char** map, int size) {
-    for (int y = 0; y < size; ++y)
+    for (int y = 0; y < size; ++y) {
         for (int x = 0; x < size; ++x)
             printf("%2c", map[y][x]);
+        printf("\n");
+    }
 }
 
 void printInfo() {
@@ -154,23 +158,30 @@ void printInfo() {
 }
 
 int main() {
-    int size = 23;
-
-    char** map = initMap(map, size);
+    int size, map_height = 0;
     char button;
 
-    COORD st_point, end_point, tmp_coord;
-    st_point.x = 1;
-    st_point.y = 1;
+    COORD st_point, end_point;
 
-    end_point.x = 2;
-    end_point.y = 2;
+    FILE* f_read = fopen("input.txt", "r");
+    char buffer[100] = {0};
+    while (fgets(buffer, 100, f_read)) {
+        for (int i = 0; i < strlen(buffer); ++i) {
+            if (buffer[i] == 'S') {
+                st_point.x = i;
+                st_point.y = map_height + 1;
+            }
+            else if (buffer[i] == 'F') {
+                end_point.x = i;
+                end_point.y = map_height + 1;
+            }
+        }
+        map_height++;
+    }
+    fclose(f_read);
 
-    tmp_coord.x = st_point.x;
-    tmp_coord.y = st_point.y;
-
-    int choosen = 0;
-
+    size = strlen(buffer) + 4;
+    char** map = initMap(map, size);
     do {
         fillMap(map, size);
         bfs(map, st_point, end_point, size);
