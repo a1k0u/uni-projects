@@ -62,8 +62,8 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
         if (cur_coord.x == end_point.x && cur_coord.y == end_point.y)
             break;
 
-        int directions[4][2] = {1, 0, -1, 0, 0, 1, 0, -1};
-        for (int i = 0; i < 4; i++) {
+        int directions[8][2] = {1, 0, -1, 0, 0, 1, 0, -1, 1, 1, -1, -1, 1, -1, -1, 1};
+        for (int i = 0; i < 8; i++) {
             flag = 0;
 
             steped_point.x = cur_coord.x + directions[i][0];
@@ -97,11 +97,13 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
     while (index_end >= 0) {
         for (int i = 0; i < visited_points_pointer; i++) {
             if (((abs(visited_points[i].x - xy_draw.x) == 1 && abs(visited_points[i].y - xy_draw.y) == 0)
-                    || (abs(visited_points[i].x - xy_draw.x) == 0 && abs(visited_points[i].y - xy_draw.y) == 1))
+                    || (abs(visited_points[i].x - xy_draw.x) == 0 && abs(visited_points[i].y - xy_draw.y) == 1)
+                    || (abs(visited_points[i].x - xy_draw.x) == 1 && abs(visited_points[i].y - xy_draw.y) == 1))
                     && visited_points[i].num == index_end-1) {
                 xy_draw.x = visited_points[i].x;
                 xy_draw.y = visited_points[i].y;
-                map[xy_draw.y][xy_draw.x] = '.';
+                map[xy_draw.y][xy_draw.x] = '`';
+                break;
             }
         }
         index_end--;
@@ -146,9 +148,8 @@ void printMap(char** map, int size) {
 }
 
 void printInfo() {
-    printf("\nUse SHIFT + < - to correct START position(S).\n");
-    printf("Use SHIFT + > - to correct END position(F).\n");
-    printf("\nUse WASD to move.");
+    printf("\n\nUse UP-2, DOWN-4, LEFT-1, RIGHT-3 to move START POINT.");
+    printf("\nUse UP-7, DOWN-9, LEFT-6, RIGHT-8 to move END POINT.");
     printf("\n\n");
 }
 
@@ -180,28 +181,15 @@ int main() {
         printInfo();
 
         button = getch();
-        if (button == 'w') tmp_coord.y--;
-        if (button == 's') tmp_coord.y++;
-        if (button == 'a') tmp_coord.x--;
-        if (button == 'd') tmp_coord.x++;
+        if (map[st_point.y-1][st_point.x] != '#' && button == '2') st_point.y--;
+        if (map[st_point.y+1][st_point.x] != '#' && button == '4') st_point.y++;
+        if (map[st_point.y][st_point.x-1] != '#' && button == '1') st_point.x--;
+        if (map[st_point.y][st_point.x+1] != '#' && button == '3') st_point.x++;
 
-        if (button == '>') {
-            tmp_coord.x = end_point.x;
-            tmp_coord.y = end_point.y;
-            choosen = 1;
-        } else if (button == '<') {
-            tmp_coord.x = st_point.x;
-            tmp_coord.y = st_point.y;
-            choosen = 0;
-        }
-
-        if (!choosen) {
-            st_point.x = tmp_coord.x;
-            st_point.y = tmp_coord.y;
-        } else if (choosen) {
-            end_point.x = tmp_coord.x;
-            end_point.y = tmp_coord.y;
-        }
+        if (map[end_point.y-1][end_point.x] != '#' && button == '7') end_point.y--;
+        if (map[end_point.y+1][end_point.x] != '#' && button == '9') end_point.y++;
+        if (map[end_point.y][end_point.x-1] != '#' && button == '6') end_point.x--;
+        if (map[end_point.y][end_point.x+1] != '#' && button == '8') end_point.x++;
 
         system("cls");
     } while (button != 'e');
