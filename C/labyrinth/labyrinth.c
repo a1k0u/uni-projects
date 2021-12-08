@@ -88,6 +88,7 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
     COORD coord_draw;
     coord_draw.x = end_point.x;
     coord_draw.y = end_point.y;
+    printf("length=%d\n", index_end_point);
     while (index_end_point >= 0) {
         for (int i = 0; i < visited_points_pointer; i++) {
             if (((abs(visited_points[i].x - coord_draw.x) == 1 && abs(visited_points[i].y - coord_draw.y) == 0)
@@ -124,8 +125,8 @@ void fillMap(char** map, int size) {
     int map_height = 1;
     char buffer[100] = {0};
     while (fgets(buffer, 100, f_read)) {
-        for (int i = 1; i < size-1; ++i) {
-            if (buffer[i] == '1')
+        for (int i = 1; i < size - 1; ++i) {
+            if (buffer[i-1] == 'X')
                 map[map_height][i] = '#';
             else
                 map[map_height][i] = ' ';
@@ -168,11 +169,11 @@ int main() {
     while (fgets(buffer, 100, f_read)) {
         for (int i = 0; i < strlen(buffer); ++i) {
             if (buffer[i] == 'S') {
-                st_point.x = i;
+                st_point.x = i + 1;
                 st_point.y = map_height + 1;
             }
             else if (buffer[i] == 'F') {
-                end_point.x = i;
+                end_point.x = i + 1;
                 end_point.y = map_height + 1;
             }
         }
@@ -180,7 +181,7 @@ int main() {
     }
     fclose(f_read);
 
-    size = strlen(buffer) + 4;
+    size = strlen(buffer) + 2;
     char** map = initMap(map, size);
     do {
         fillMap(map, size);
