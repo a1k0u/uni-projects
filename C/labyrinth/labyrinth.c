@@ -40,7 +40,7 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
     queue_points.pointer = 0;
 
     int visited_points_pointer = 0;
-    int flag = 0, index_end_point;
+    int flag = 0, index_end_point = -1;
 
     st_point.num = 0;
 
@@ -58,6 +58,8 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
 
         if (!flag)
             visited_points[visited_points_pointer++] = cur_coord;
+        else
+            continue;
 
         if (cur_coord.x == end_point.x && cur_coord.y == end_point.y) {
             index_end_point = cur_coord.num;
@@ -84,24 +86,24 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
             }
         }
     }
-
-    COORD coord_draw;
-    coord_draw.x = end_point.x;
-    coord_draw.y = end_point.y;
     printf("length=%d\n", index_end_point);
-    while (index_end_point >= 0) {
-        for (int i = 0; i < visited_points_pointer; i++) {
-            if (((abs(visited_points[i].x - coord_draw.x) == 1 && abs(visited_points[i].y - coord_draw.y) == 0)
-                    || (abs(visited_points[i].x - coord_draw.x) == 0 && abs(visited_points[i].y - coord_draw.y) == 1)
-                    || (abs(visited_points[i].x - coord_draw.x) == 1 && abs(visited_points[i].y - coord_draw.y) == 1))
-                    && visited_points[i].num == index_end_point-1) {
-                coord_draw.x = visited_points[i].x;
-                coord_draw.y = visited_points[i].y;
-                map[coord_draw.y][coord_draw.x] = '`';
-                break;
-            }
+
+    if (index_end_point != -1) {
+        COORD coord_draw;
+        coord_draw.x = end_point.x;
+        coord_draw.y = end_point.y;
+        while (index_end_point >= 0) {
+            for (int i = 0; i < visited_points_pointer; i++)
+                if (visited_points[i].num == index_end_point - 1)
+                    if (abs(visited_points[i].x - coord_draw.x) +
+                            abs(visited_points[i].y - coord_draw.y) == 1) {
+                        coord_draw.x = visited_points[i].x;
+                        coord_draw.y = visited_points[i].y;
+                        map[coord_draw.y][coord_draw.x] = '`';
+                        break;
+                    }
+            index_end_point--;
         }
-        index_end_point--;
     }
 }
 
