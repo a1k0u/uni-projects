@@ -3,40 +3,15 @@
 #include <string.h>
 #include <math.h>
 #include <conio.h>
+#include "point.h"
 
-#define QUEUE_SIZE 1000
+void bfs (char** map, POINT st_point, POINT end_point, int size) {
+    POINT* visited_points = (POINT*)calloc(5000, sizeof(POINT));
+    POINT steped_point;
 
-typedef struct cd {
-    int num;
-    int x;
-    int y;
-} COORD;
-
-typedef struct qu {
-    COORD memory[QUEUE_SIZE];
-    int pointer;
-} QUEUE;
-
-void push(QUEUE* queue, COORD cd) {
-    if (queue->pointer != QUEUE_SIZE)
-        queue->memory[queue->pointer++] = cd;
-}
-
-COORD pop(QUEUE* queue) {
-    if (queue->pointer != 0) {
-        COORD coordinates = queue->memory[0];
-        for (int i = 0; i < QUEUE_SIZE - 1; ++i)
-            queue->memory[i] = queue->memory[i+1];
-        queue->pointer--;
-
-        return coordinates;
-    }
-}
-
-void bfs (char** map, COORD st_point, COORD end_point, int size) {
-    COORD visited_points[5000];
-    COORD steped_point;
-    QUEUE queue_points;
+    POINTS_QUEUE queue_points;
+    queue_points.q_size = 3;
+    queue_points.memory = (POINT*)calloc(queue_points.q_size, sizeof(POINT));
     queue_points.pointer = 0;
 
     int visited_points_pointer = 0;
@@ -46,7 +21,7 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
 
     push(&queue_points, st_point);
     while(queue_points.pointer != 0) {
-        COORD cur_coord = pop(&queue_points);
+        POINT cur_coord = pop(&queue_points);
 
         flag = 0;
         for (int i = 0; i < visited_points_pointer; i++)
@@ -86,10 +61,10 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
             }
         }
     }
-    printf("length=%d\n", index_end_point);
+    printf("length=%d, q_size=%d\n", index_end_point, queue_points.q_size);
 
     if (index_end_point != -1) {
-        COORD coord_draw;
+        POINT coord_draw;
         coord_draw.x = end_point.x;
         coord_draw.y = end_point.y;
         while (index_end_point >= 0) {
@@ -105,6 +80,8 @@ void bfs (char** map, COORD st_point, COORD end_point, int size) {
             index_end_point--;
         }
     }
+    free(queue_points.memory);
+    free(visited_points);
 }
 
 char** initMap(char** map, int SIZE) {
@@ -164,7 +141,7 @@ int main() {
     int size, map_height = 0;
     char button;
 
-    COORD st_point, end_point;
+    POINT st_point, end_point;
 
     FILE* f_read = fopen("input.txt", "r");
     char buffer[100] = {0};
