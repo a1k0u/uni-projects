@@ -2,31 +2,17 @@ format short;
 clc;
 
 main();
-    
+
 function [y] = f(x, num)
     F = {@(x) 2*x.^4-8*x.^3+8*x.^2-1;
-         @(x) 2*atan(x) - x+3};
+         @(x) 2*atan(x) - x+3;
+         @(x) (x.^3-0.25.*x.^4+0.125).^(1/2);
+         @(x) 2*atan(x) + 3};
     y = F{num}(x);
 end 
 
-function [y] = derivatives_f(x, num, k)
-    F = {{@(x) 8*x.^3 - 24*x^2 + 16*x;
-          @(x) 24*x.^2 - 48*x + 16};
-         {@(x) 2/(1+x.^2) - 1;
-          @(x) (4*x)/((1-x.^2)^2)}};
-    y = F{num}{k}(x);
-end
-
-function [y] = equivalent_f(x, num)
-    F = {@(x) (x.^3-0.25.*x.^4+0.125).^(1/2);
-         @(x) 2*atan(x) + 3};
-    y = F{num}(x);
-end
-
-function [y] = equivalent_derivatives(x, num)
-    F = {@(x) ((x-3)*x.^2)/((0.5-(x-4).*x.^3).^(1/2));
-         @(x) 2/(x.^2+1)};
-    y = F{num}(x);
+function [y] = df(x, num, h)
+    y = (f(x + h, num) - f(x, num)) / h;
 end
 
 function [] = main()
@@ -144,13 +130,13 @@ end
 function [x, iterations] = newton(a, b, eps, num)
     iterations = 0;
     if f(a, num)*f(b, num) < 0
-        if f(a, num)*derivatives_f(a, num, 2) > 0
+        if f(a, num)*df(a, num, 10e-12) > 0
             x = a;
         else
             x = b;
         end
         while abs(f(x, num)) > eps
-            x = x - (f(x, num)/derivatives_f(x, num, 1));
+            x = x - (f(x, num)/df(x, num, 10e-12));
             iterations = iterations + 1;
         end
     end
@@ -158,10 +144,10 @@ end
 
 function [c, iterations] = iteration(a, b, eps, num)
     iterations = 0;
-    if abs(equivalent_derivatives(a, num)) < 1 && abs(equivalent_derivatives(b, num)) < 1
+    if abs(df(a, num + 2, 10e-12)) < 1 && abs(df(b, num + 2, 10e-12)) < 1
         c = a;
         while abs(f(c, num)) > eps
-            c = equivalent_f(c, num);
+            c = f(c, num + 2);
             iterations = iterations + 1;
         end
     end
